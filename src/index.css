@@ -1,0 +1,152 @@
+@import "tailwindcss";
+
+/* =============================== */
+/* Light Theme (Default) */
+/* =============================== */
+
+:root {
+    
+  --grey-100: #141414;
+  --grey-200: #292929;
+  --grey-300: #3d3d3d;
+  --grey-400: #525252;
+  --grey-500: #666666;
+  --grey-600: #858585;
+  --grey-700: #a3a3a3;
+  --grey-800: #c2c2c2;
+  --grey-900: #e0e0e0;
+
+  --primary-100: #040509;
+  --primary-200: #080b12;
+  --primary-300: #0c101b;
+  --primary-400: #f2f0f0;
+  --primary-500: #141b2d;
+  --primary-600: #1F2A40;
+  --primary-700: #727681;
+  --primary-800: #a1a4ab;
+  --primary-900: #d0d1d5;
+
+  --greenAccent-100: #0f2922;
+  --greenAccent-200: #1e5245;
+  --greenAccent-300: #2e7c67;
+  --greenAccent-400: #3da58a;
+  --greenAccent-500: #4cceac;
+  --greenAccent-600: #70d8bd;
+  --greenAccent-700: #94e2cd;
+  --greenAccent-800: #b7ebde;
+  --greenAccent-900: #dbf5ee;
+
+  --redAccent-100: #2c100f;
+  --redAccent-200: #58201e;
+  --redAccent-300: #832f2c;
+  --redAccent-400: #af3f3b;
+  --redAccent-500: #db4f4a;
+  --redAccent-600: #e2726e;
+  --redAccent-700: #e99592;
+  --redAccent-800: #f1b9b7;
+  --redAccent-900: #f8dcdb;
+
+  --blueAccent-100: #151632;
+  --blueAccent-200: #2a2d64;
+  --blueAccent-300: #3e4396;
+  --blueAccent-400: #535ac8;
+  --blueAccent-500: #6870fa;
+  --blueAccent-600: #868dfb;
+  --blueAccent-700: #a4a9fc;
+  --blueAccent-800: #c3c6fd;
+  --blueAccent-900: #e1e2fe;
+
+  --error: #f44336;
+  --infobg: #2196F3;
+  --successbg: #4CAF50;
+  --warningbg: #FFC107;
+
+  --button_hover: var(--grey-300);
+  --button_active: var(--grey-700);
+  --menu_item_hover: var(--greenAccent-400);
+  --menu_item_active: var(--greenAccent-700);
+
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+
+}
+
+/* =============================== */
+/* Dark Theme */
+/* =============================== */
+
+.dark {
+  --grey-100: #e0e0e0;
+  --grey-200: #c2c2c2;
+  --grey-300: #a3a3a3;
+  --grey-400: #858585;
+  --grey-500: #666666;
+  --grey-600: #525252;
+  --grey-700: #3d3d3d;
+  --grey-800: #292929;
+  --grey-900: #141414;
+
+  --primary-100: #d0d1d5;
+  --primary-200: #a1a4ab;
+  --primary-300: #727681;
+  --primary-400: #1F2A40;
+  --primary-500: #141b2d;
+  --primary-600: #101624;
+  --primary-700: #0c101b;
+  --primary-800: #080b12;
+  --primary-900: #040509;
+
+  --greenAccent-100: #dbf5ee;
+  --greenAccent-200: #b7ebde;
+  --greenAccent-300: #94e2cd;
+  --greenAccent-400: #70d8bd;
+  --greenAccent-500: #4cceac;
+  --greenAccent-600: #3da58a;
+  --greenAccent-700: #2e7c67;
+  --greenAccent-800: #1e5245;
+  --greenAccent-900: #0f2922;
+
+  --redAccent-100: #f8dcdb;
+  --redAccent-200: #f1b9b7;
+  --redAccent-300: #e99592;
+  --redAccent-400: #e2726e;
+  --redAccent-500: #db4f4a;
+  --redAccent-600: #af3f3b;
+  --redAccent-700: #832f2c;
+  --redAccent-800: #58201e;
+  --redAccent-900: #2c100f;
+
+  --blueAccent-100: #e1e2fe;
+  --blueAccent-200: #c3c6fd;
+  --blueAccent-300: #a4a9fc;
+  --blueAccent-400: #868dfb;
+  --blueAccent-500: #6870fa;
+  --blueAccent-600: #535ac8;
+  --blueAccent-700: #3e4396;
+  --blueAccent-800: #2a2d64;
+  --blueAccent-900: #151632;
+
+
+
+  --error: #f44336;
+  --infobg: #2196F3;
+  --successbg: #4CAF50;
+  --warningbg: #FFC107;
+
+  --button_hover: var(--grey-800);
+  --button_active: var(--grey-500);
+  --menu_item_hover: var(--grey-700);
+  --menu_item_active: var(--greenAccent-700);
+}
+
+/* =============================== */
+/* Apply Global Theme */
+/* =============================== */
+
+html, body {
+  background-color: var(--primary-400);
+  color: var(--grey-100);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}

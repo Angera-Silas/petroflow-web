@@ -1,0 +1,24 @@
+import BarChart from "../../components/charts/BarChart";
+import PivotTable from "../../components/tables/PivotTable";
+
+const DepartmentManagerDashboard = () => {
+  const employeePerformance = [
+    { label: "Efficiency", values: [85, 90, 88] },
+    { label: "Customer Satisfaction", values: [4.5, 4.7, 4.6] },
+  ];
+  const labels = ["Q1", "Q2", "Q3"];
+  const salesReports = [
+    { Month: "Jan", Sales: 2000, Revenue: 5000 },
+    { Month: "Feb", Sales: 2500, Revenue: 6000 },
+  ];
+
+  return (
+    <div className="p-6">
+      <h1 className="text-2xl font-bold mb-6">Department Manager Dashboard</h1>
+      <BarChart data={employeePerformance} labels={labels} theme="dark" />
+      <PivotTable data={salesReports} columns={["Sales", "Revenue"]} rowKey="Month" theme="dark" />
+    </div>
+  );
+};
+
+export default DepartmentManagerDashboard;

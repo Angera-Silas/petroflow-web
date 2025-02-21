@@ -1,0 +1,20 @@
+.resizable {
+  position: relative;
+}
+
+.resize-handle {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 5px;
+  cursor: col-resize;
+}
+
+th:hover {
+  cursor: pointer;
+}
+
+th:hover .resize-handle {
+  background-color: #ccc;
+}
