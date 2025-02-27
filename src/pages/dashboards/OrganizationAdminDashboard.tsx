@@ -1,13 +1,21 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { FaUsers, FaGasPump, FaMoneyBillWave, FaExclamationCircle } from "react-icons/fa";
 import Table from "../../components/tables/CustomTable";
 import LineChart from "../../components/charts/LineChart";
 import PieChart from "../../components/charts/PieChart";
+import { getRequest } from "../../utils/api";
+import { useSelector } from "react-redux";
+import { RootState } from "../../store";
+
 
 interface OrganizationAdminDashboardProps {
   theme: string;
 }
 
 const OrganizationAdminDashboard = ({ theme }: OrganizationAdminDashboardProps) => {
+
+  const user = useSelector((state: RootState) => state.user);
+
   const isDarkMode = theme === "dark";
   const revenueData = [{ label: "Revenue", values: [500, 700, 1000] }];
   const revenueLabels = ["Q1", "Q2", "Q3"];

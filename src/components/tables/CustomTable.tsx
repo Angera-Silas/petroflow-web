@@ -37,7 +37,7 @@ const Table = ({ columns, data, theme, itemsPerPage = 10, title }: TableProps) =
           {paginatedData.map((row, rowIndex) => (
             <tr key={rowIndex} className={`border-b ${isDarkMode ? "border-gray-700" : "border-gray-300"}`}>
               {columns.map((col, colIndex) => (
-                <td key={colIndex} className="p-2">{row[col]}</td>
+                <td key={colIndex} className="p-2 text-sm">{row[col]}</td>
               ))}
             </tr>
           ))}

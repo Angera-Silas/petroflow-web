@@ -36,7 +36,7 @@ const menuItems = [
       { name: "Manage Users", path: "/users/manage" },
       { name: "View User", path: "/users/view" },
       { name: "User Roles", path: "/users/roles" },
-      { name: "Manage Permissions", path: "/users/permissions" },
+      { name: "Manage Permissions", path: "/users/manage/permissions" },
     ],
   },
   
@@ -56,6 +56,7 @@ const menuItems = [
     subItems: [
       { name: "Add Employee", path: "/employees/add", roles: ["STATION_MANAGER", "ORGANIZATION_ADMIN", "SYSTEM_ADMIN"] },
       { name: "Manage Employees", path: "/employees/manage", roles: ["STATION_MANAGER", "ORGANIZATION_ADMIN", "SYSTEM_ADMIN"] },
+      { name: "View Employee", path: "/employees/view", roles: ["STATION_MANAGER", "ORGANIZATION_ADMIN", "SYSTEM_ADMIN", "DEPARTMENT_MANAGER"] },
       { name: "Performance Summary", path: "/employees/performance-summary", roles: ["ALL"] },
       { name: "Employee Shifts", path: "/employees/shifts", roles: ["STATION_MANAGER", "DEPARTMENT_MANAGER", "SYSTEM_ADMIN"] },
     ],

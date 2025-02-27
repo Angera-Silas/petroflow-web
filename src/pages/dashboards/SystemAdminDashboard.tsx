@@ -3,19 +3,24 @@ import { FaUsers, FaBox, FaMoneyBillWave, FaHome } from "react-icons/fa";
 import Table from "../../components/tables/CustomTable";
 import { useState, useEffect } from "react";
 import { getRequest } from "../../utils/api";
+import { useSelector } from "react-redux";
+import { RootState } from "../../store";
 
 interface AdminDashboardProps {
   theme: string;
 }
 
 interface Organization {
-  orgId: number;
-  orgName: string;
-  orgCounty: string;
-  orgTown: string;
-  orgPhone: string;
-  orgEmail: string;
-  numberOfStations: number;
+  name: string;
+  physicalAddress: string;
+  town: string;
+  street: string;
+  postalCode: string;
+  type: string;
+  email: string;
+  phone: string;
+  facilityCount: number;
+  employeeCount: number;
 }
 
 interface Users {
@@ -29,20 +34,28 @@ interface Users {
 }
 
 interface Facility{
-  FaciltyName: string;
-  Location: string;
-  Email: string;
-  Phone: string;
-  Workers: string;
-  "Products/Services": string;
-  OrganizationName: string;
+  name: string;
+  county: string;
+  town: string;
+  street: string;
+  phone: string;
+  email: string;
+  physicalAddress: string;
+  postalCode: string;
+  servicesOffered: string;
+  employeeCount: number;
+  orgName: string;
 }
 
 const AdminDashboard = ({ theme }: AdminDashboardProps) => {
+  
+  const user = useSelector((state: RootState) => state.user);
+
   const isDarkMode = theme === "dark"; // Check the theme prop
 
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [users, setUsers] = useState<Users[]>([]);
+  const [facilities, setFacilities] = useState<Facility[]>([]);
   const [loading, setLoading] = useState(true);
   const [notification, setNotification] = useState<{ title: string; message: string; type: "success" | "error" | "info" | "warning" } | null>(null);
 
@@ -54,7 +67,7 @@ const AdminDashboard = ({ theme }: AdminDashboardProps) => {
   useEffect(() => {
     const fetchOrganizations = async () => {
       try {
-        const response = await getRequest("/organizations/get/all");
+        const response = await getRequest("/organizations/get/details/all");
 
         if (!response) {
           throw new Error("Invalid response from server");
@@ -96,15 +109,43 @@ const AdminDashboard = ({ theme }: AdminDashboardProps) => {
   }, []);
 
 
+  useEffect(() => {
+
+    const fetchFacilities = async () => {
+      try {
+        const facilityResponse = await getRequest("/facilities/get/all/details");
+        if (!facilityResponse) {
+          throw new Error("Invalid response from server");
+        }
+
+        setFacilities(facilityResponse);
+        setLoading(false);
+      } catch (error) {
+        showNotification("Error", "Failed to fetch facilities", "error");
+        setLoading(false);
+      }
+    };
+
+    fetchFacilities();
+
+  }, []);
+
 
   // Transform organizations data to match table structure
   const organizationData = organizations.map((org) => ({
-    Name: org.orgName,
-    Location: `${org.orgTown}, ${org.orgCounty}`,
-    Email: org.orgEmail,
-    Phone: org.orgPhone,
-    Facilities: org.numberOfStations.toString(),
-    Workers: "N/A", // Update if worker data is available
+    Name: org.name,
+    Type: org.type,
+    Location: (
+      <>
+          {org.physicalAddress || "Unknown Address"} - {org.postalCode || ""}
+          <br />
+          {org.street || ""}, {org.town || ""}
+      </>
+  ),
+    Email: org.email,
+    Phone: org.phone,
+    Facilities: org.facilityCount.toString(),
+    Employees: org.employeeCount, // Update if worker data is available
   }));
 
 
@@ -120,6 +161,24 @@ const AdminDashboard = ({ theme }: AdminDashboardProps) => {
   }));
  
 
+  const facilitiesData = facilities.map((facility) => ({
+    Name: facility.name || "N/A",
+    Organization: facility.orgName || "N/A",
+    Location: (
+        <>
+            {facility.physicalAddress || "Unknown Address"} - {facility.postalCode || ""}
+            <br />
+            {facility.street || ""}, {facility.town || ""}
+        </>
+    ),
+    Email: facility.email || "N/A",
+    Phone: facility.phone || "N/A",
+    Employees: facility.employeeCount ?? 0,
+    "Products/Services": Array.isArray(facility.servicesOffered)
+        ? facility.servicesOffered.join(", ")
+        : facility.servicesOffered || "N/A",
+}));
+
 
 
   const notifications = [
@@ -128,11 +187,6 @@ const AdminDashboard = ({ theme }: AdminDashboardProps) => {
     { type: "new_sale", message: "Sale of Ksh 25,000 completed.", sender: "Cashier" },
   ];
 
-  const facilities = [
-    { Name: "AngiSoft HQ", Location: "Nakuru, Kenya", Email: "nkr@angisoft.co.ke", Phone: "(254) 710 398690", Workers: "5", "Products/Services": "HEAD OFFICE" },
-    { Name: "AngiSoft Nairobi", Location: "Nairobi, Kenya", Email: "nrb@angisoft.co.ke", Phone: "(254) 731 367240", Workers: "4", "Products/Services": "Ethical Hacking, Web Dev" },
-    { Name: "AngiSoft Kitale", Location: "Kitale, Kenya", Email: "ktl@angisoft.co.ke", Phone: "(254) 797 630228", Workers: "4", "Products/Services": "AI, ML, Data Analysis" },
-  ];
 
   const getIcon = (type: string) => {
     switch (type) {
@@ -199,10 +253,10 @@ const AdminDashboard = ({ theme }: AdminDashboardProps) => {
       <Table title="Users" columns={["First Name", "Last Name", "Role", "Email", "Organization", "Facility", "Department"]} data={usersData} theme={theme} itemsPerPage={15} />
 
       {/* Organizations Table with real data */}
-      <Table title="Organizations" columns={["Name", "Location", "Email", "Phone", "Facilities", "Workers"]} data={organizationData} theme={theme} />
+      <Table title="Organizations" columns={["Name","Type", "Location", "Email", "Phone", "Facilities", "Employees"]} data={organizationData} theme={theme} />
 
       {/* Facilities Table */}
-      <Table title="Stations / Facilities" columns={["Name", "Location", "Email", "Phone", "Workers", "Products/Services"]} data={facilities} theme={theme} itemsPerPage={15} />
+      <Table title="Stations / Facilities" columns={["Name", "Name", "Location", "Email", "Phone", "Employees", "Products/Services"]} data={facilitiesData} theme={theme} itemsPerPage={15} />
     </div>
   );
 };

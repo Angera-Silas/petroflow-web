@@ -15,7 +15,7 @@ interface InputFieldProps {
   required?: boolean;
   readonly?: boolean;
 
-  onChange: React.ChangeEventHandler<HTMLInputElement>;
+  onChange?: React.ChangeEventHandler<HTMLInputElement>;
 }
 
 const TextInputField: React.FC<InputFieldProps> = ({ label, type, placeholder, value, onChange, name, theme, pattern,minlength,maxlength,required, readonly,id }) => {

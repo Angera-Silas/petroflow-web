@@ -1,6 +1,30 @@
 import LineChart from "../../components/charts/LineChart";
 import PivotTable from "../../components/tables/PivotTable";
+import { getRequest } from "../../utils/api";
 
+
+let userRole = localStorage.getItem("authRole")?.replace(/"/g, "") || null;
+const username = localStorage.getItem("authUser")?.replace(/"/g, "") || null;
+
+  if(userRole === null && username === null){
+    window.location.href = "/login";
+  }else{
+    const userDetails = await getRequest(`/users/get/username/${username}`);
+    const userId = userDetails.id;
+
+    userRole = userDetails.role;
+
+    const employeeDetails = await getRequest(`/employees/info/${userId}`);
+
+    const orgId = employeeDetails.organizationId;
+    const facilityId = employeeDetails.facilityId;
+
+
+    localStorage.setItem("authOrgId", orgId);
+    localStorage.setItem("authFacilityId", facilityId);
+    
+  }
+  
 const QualityMarshalDashboard = () => {
   const qualityTrends = [{ label: "Fuel Purity", values: [98, 96, 99, 97] }];
   const labels = ["Jan", "Feb", "Mar", "Apr"];

@@ -1,13 +1,23 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { FaGasPump, FaMoneyBillWave, FaShoppingCart, FaExclamationTriangle } from "react-icons/fa";
 import Table from "../../components/tables/CustomTable";
 import BarChart from "../../components/charts/BarChart";
 import PivotTable from "../../components/tables/PivotTable";
+import { getRequest } from "../../utils/api";
+import { useSelector } from "react-redux";
+import { RootState } from "../../store";
 
 interface StationManagerDashboardProps {
   theme: string;
 }
 
 const StationManagerDashboard = ({ theme }: StationManagerDashboardProps) => {
+  
+  const user = useSelector((state: RootState) => state.user);
+
+  const userId = user.userId;
+  
+
   const isDarkMode = theme === "dark";
   const fuelSales = [{ label: "Diesel", values: [200, 300, 400] }];
   const labels = ["Jan", "Feb", "Mar"];

@@ -7,7 +7,9 @@ interface Column {
   key: string;
   label: string;
   resizable?: boolean;
+  render?: (row: any) => React.ReactNode;
 }
+
 
 interface RowData {
   [key: string]: any;
@@ -163,7 +165,7 @@ const ReusableTable: React.FC<ReusableTableProps> = ({
                   />
                 </td>
                 {visibleColumns.map((col) => (
-                  <td key={col.key} className={`border p-2 ${borderColor}`}>
+                  <td key={col.key} className={`border p-2 ${borderColor} text-sm`}>
                     {row[col.key]}
                   </td>
                 ))}

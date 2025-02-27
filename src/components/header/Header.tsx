@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FiMenu, FiSun, FiMoon, FiBell, FiMessageSquare, FiX, FiUser, FiChevronDown, FiMail, FiBriefcase, FiMapPin } from 'react-icons/fi';
+import { FiMenu, FiSun, FiMoon, FiBell, FiMessageSquare, FiX, FiUser, FiChevronDown, FiMail, FiBriefcase, FiMapPin, FiPhone } from 'react-icons/fi';
 import { motion } from 'framer-motion';
 import profilePic from "/src/assets/profile_pics/prof-angera.png";
+import { useSelector } from "react-redux";
+import { RootState } from "../../store";
 
 interface HeaderProps {
   toggleSidebar: () => void;
@@ -11,6 +13,9 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = ({ toggleSidebar, theme, toggleTheme }) => {
+
+  const user = useSelector((state: RootState) => state.user);
+
   const [activeDrawer, setActiveDrawer] = useState<'notifications' | 'messages' | 'logout' | null>(null);
   const navigate = useNavigate();
   const notifications = [
@@ -26,12 +31,14 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar, theme, toggleTheme }) =>
   ];
 
   const userProfile = {
-    name: "Prof. Angera Silas",
-    email: "sangera@petroflow.co.ke",
-    phone: "254797630228",
-    organization: "AngiSoft Technologies",
-    facility: "HQ",
-    role: "Super Admin",
+    name: user.name,
+    email: user.email,
+    phone: user.phone,
+    organization: user.organizationName,
+    facility: user.facilityName,
+    address: user.address,
+    town: user.town,
+    role: user.role,
     profile_photo: profilePic || '' // Replace with actual image URL
   };
 
@@ -94,11 +101,11 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar, theme, toggleTheme }) =>
         <div className="relative">
           {/* Notifications Drawer */}
           {activeDrawer === "notifications" && (
-            <motion.div 
-            initial={{ x: 300 }} 
-            animate={{ x: 0 }} 
-            exit={{ x: 300 }} 
-            className={`fixed top-18 right-0 w-80 h-full shadow-lg p-4 overflow-y-auto z-999 ${theme === "dark" ? "bg-gray-900 text-dark-text" : "bg-white text-light-text"}`}>
+            <motion.div
+              initial={{ x: 300 }}
+              animate={{ x: 0 }}
+              exit={{ x: 300 }}
+              className={`fixed top-18 right-0 w-80 h-full shadow-lg p-4 overflow-y-auto z-999 ${theme === "dark" ? "bg-gray-900 text-dark-text" : "bg-white text-light-text"}`}>
               <div className="flex justify-between items-center">
                 <h2 className="text-lg font-semibold">Notifications</h2>
                 <button onClick={() => setActiveDrawer(null)}><FiX /></button>
@@ -115,11 +122,11 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar, theme, toggleTheme }) =>
 
           {/* Messages Drawer */}
           {activeDrawer === "messages" && (
-            <motion.div 
-            initial={{ x: 300 }} 
-            animate={{ x: 0 }} 
-            exit={{ x: 300 }} 
-            className={`fixed top-18 right-0 w-80 h-full shadow-lg p-4 overflow-y-auto z-999 ${theme === "dark" ? "bg-gray-900 text-dark-text" : "bg-white text-light-text"}`}>
+            <motion.div
+              initial={{ x: 300 }}
+              animate={{ x: 0 }}
+              exit={{ x: 300 }}
+              className={`fixed top-18 right-0 w-80 h-full shadow-lg p-4 overflow-y-auto z-999 ${theme === "dark" ? "bg-gray-900 text-dark-text" : "bg-white text-light-text"}`}>
               <div className="flex justify-between items-center">
                 <h2 className="text-lg font-semibold">Messages</h2>
                 <button onClick={() => setActiveDrawer(null)}><FiX /></button>
@@ -162,14 +169,17 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar, theme, toggleTheme }) =>
                 )}
 
                 <p className="text-center text-xl font-bold">{userProfile?.name || "N/A"}</p>
-                <p className="text-center text-sm">{userProfile?.role || "Unknown Role"}</p>
+                <p className="text-center text-sm">{user.role || "Unknown Role"}</p>
 
                 {/* Info Cards */}
                 <div className="mt-4 space-y-5">
                   {[
                     { icon: <FiMail />, label: "Email", value: userProfile?.email },
+                    { icon: <FiPhone />, label: "Phone", value: userProfile?.phone },
                     { icon: <FiBriefcase />, label: "Organization", value: userProfile?.organization },
                     { icon: <FiMapPin />, label: "Facility", value: userProfile?.facility },
+                    { icon: <FiMapPin />, label: "Address", value: userProfile?.address },
+
                   ].map((item, index) => (
                     <div
                       key={index}
@@ -183,14 +193,17 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar, theme, toggleTheme }) =>
                       </div>
                     </div>
                   ))}
+
                 </div>
+
+                <button className="mt-4 p-2 w-full rounded bg-red-500 text-white hover:bg-red-600 transition duration-300"
+                  onClick={() => navigate("/login")}
+                >
+                  Logout
+                </button>
+
               </div>
 
-              <button className="mt-4 p-2 w-full rounded bg-red-500 text-white hover:bg-red-600 transition duration-300"
-              onClick={() => navigate("/login")}
-              >
-                Logout
-              </button>
             </motion.div>
           )}
         </div>
