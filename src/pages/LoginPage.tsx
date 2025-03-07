@@ -118,7 +118,7 @@ const Login: React.FC<LoginProps> = ({ theme }) => {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            minlength={8}
+            minlength={6}
             maxlength={15}
             name="password"
             theme={theme}

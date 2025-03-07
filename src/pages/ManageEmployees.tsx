@@ -94,18 +94,18 @@ const ManageEmployees: React.FC<ManageEmployees> = ({ theme }) => {
 
       switch (userRole) {
         case "SYSTEM_ADMIN":
-          employeeResponse = await getRequest("/employees/details/get/all");
+          employeeResponse = await getRequest("/organization-employee/details/get/all");
           break;
         case "ORGANIZATION_ADMIN":
-          employeeResponse = await getRequest(`/employees/details/get/${user.organizationId}/details`);
+          employeeResponse = await getRequest(`/organization-employee/details/get/${user.organizationId}/details`);
           break;
         case "STATION_MANAGER":
         case "DEPARTMENT_MANAGER":
         case "QUALITY_MARSHAL":
-          employeeResponse = await getRequest(`/employees/details/get/${user.organizationId}/facility/${user.facilityId}/details`);
+          employeeResponse = await getRequest(`/organization-employeedetails/get/${user.organizationId}/facility/${user.facilityId}/details`);
           break;
         case "RETAILER":
-          employeeResponse = await getRequest(`/employees/details/get/${user.organizationId}/details`);
+          employeeResponse = await getRequest(`/organization-employee/details/get/${user.organizationId}/details`);
           break;
         default:
           throw new Error("Invalid user role");

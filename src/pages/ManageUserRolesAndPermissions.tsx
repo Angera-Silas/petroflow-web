@@ -25,6 +25,8 @@ const rolePermissions: { [key: string]: string[] } = {
     QUALITY_MARSHAL: ["INSPECT_QUALITY", "GENERATE_REPORTS"],
 };
 
+
+
 interface ManageUserPermissionsProps {
     theme: string;
 }
@@ -78,6 +80,8 @@ const ManageUserPermissions: React.FC<ManageUserPermissionsProps> = ({ theme }) 
             setNotification({ title: "Error", message: "Failed to fetch users", type: "error" });
         }
     };
+
+    
 
     const handleRoleChange = (role: string) => {
         setSelectedRole(role);

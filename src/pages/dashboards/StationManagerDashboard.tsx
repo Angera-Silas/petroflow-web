@@ -19,7 +19,11 @@ const StationManagerDashboard = ({ theme }: StationManagerDashboardProps) => {
   
 
   const isDarkMode = theme === "dark";
-  const fuelSales = [{ label: "Diesel", values: [200, 300, 400] }];
+  const fuelSales = [
+    { label: "Diesel", values: [200, 300, 400] },
+    { label: "Petrol", values: [150, 250, 350] },
+    { label: "Kerosene", values: [100, 200, 300] },
+  ];
   const labels = ["Jan", "Feb", "Mar"];
   const pumpData = [{ Pump: "Pump 1", Sales: 500 }, { Pump: "Pump 2", Sales: 700 }];
 
@@ -46,8 +50,8 @@ const StationManagerDashboard = ({ theme }: StationManagerDashboardProps) => {
         ))}
       </div>
 
-      <BarChart data={fuelSales} labels={labels} theme="light" />
-      <PivotTable data={pumpData} columns={["Sales"]} rowKey="Pump" theme="light" />
+      <BarChart data={fuelSales} labels={labels} theme={theme} />
+      <PivotTable data={pumpData} columns={["Sales"]} rowKey="Pump" theme={theme} />
       {/* Staff List */}
       <Table title="Staff Members" columns={["Name", "Role", "Shift"]} data={[]} theme={theme} />
 

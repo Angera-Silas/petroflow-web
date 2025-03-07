@@ -91,7 +91,7 @@ const AdminDashboard = ({ theme }: AdminDashboardProps) => {
 
     const fetchUsers = async () => {
       try {
-        const userResponse = await getRequest("/employees/details/get/all");
+        const userResponse = await getRequest("/organization-employee/details/get/all");
         if (!userResponse) {
           throw new Error("Invalid response from server");
         }

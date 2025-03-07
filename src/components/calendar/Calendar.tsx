@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable react-hooks/rules-of-hooks */
 import React, { useState, useEffect } from "react";
-import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, isToday, isSameMonth } from "date-fns";
+import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, isToday, isSameMonth, subMonths, addMonths } from "date-fns";
+import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 
 // List of constant holidays (fixed dates)
 const constantHolidays = [
@@ -69,7 +70,7 @@ const GeneralCalendar: React.FC<GeneralCalendarProps> = ({ theme }) => {
   const [newEvent, setNewEvent] = useState("");
   const [newTask, setNewTask] = useState("");
   const [setReminder, setSetReminder] = useState(false);
-  const [selectedYear, setSelectedYear] = useState<number>(2025); // Default year set to 2025
+  const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear()); // Default year set to current year
 
   const startMonth = startOfMonth(currentMonth);
   const endMonth = endOfMonth(currentMonth);
@@ -111,37 +112,61 @@ const GeneralCalendar: React.FC<GeneralCalendarProps> = ({ theme }) => {
 
   const handleMonthChange = (action: "prev" | "next") => {
     if (action === "prev") {
-      setCurrentMonth((prev) => addDays(prev, -30));
+      const newMonth = subMonths(currentMonth, 1);
+      setCurrentMonth(newMonth);
+      if (newMonth.getFullYear() !== selectedYear) {
+        setSelectedYear(newMonth.getFullYear());
+      }
     } else {
-      setCurrentMonth((prev) => addDays(prev, 30));
+      const newMonth = addMonths(currentMonth, 1);
+      setCurrentMonth(newMonth);
+      if (newMonth.getFullYear() !== selectedYear) {
+        setSelectedYear(newMonth.getFullYear());
+      }
     }
   };
 
-  const handleYearChange = (action: "prev" | "next") => {
-    if (action === "prev") {
-      setSelectedYear(selectedYear - 1);
-    } else {
-      setSelectedYear(selectedYear + 1);
-    }
+  const handleYearChange = (year: number) => {
+    setSelectedYear(year);
+    setCurrentMonth(new Date(year, currentMonth.getMonth(), 1));
   };
+
+  const years = Array.from({ length: 100 }, (_, i) => new Date().getFullYear() - 50 + i);
 
   return (
     <div className={`max-w-4xl mx-auto p-6 ${theme === "dark" ? "bg-gray-800 text-white" : "bg-white text-black"} shadow-lg rounded-lg`}>
+      
+      <div className="flex justify-between items-center mb-4">
+        <select
+          value={selectedYear}
+          onChange={(e) => handleYearChange(Number(e.target.value))}
+          className={`px-3 py-1 rounded ${theme === "dark" ? "bg-gray-700 text-white" : "bg-gray-300 text-black"}`}
+        >
+          {years.map((year) => (
+            <option key={year} value={year}>
+              {year}
+            </option>
+          ))}
+        </select>
+      </div>
+      
       <div className="flex justify-between items-center mb-4">
         <button
-          onClick={() => handleYearChange("prev")}
-          className="px-3 py-1 bg-gray-300 rounded"
+          onClick={() => handleMonthChange("prev")}
+          className={`px-3 py-1 rounded ${theme === "dark" ? "bg-gray-700 text-white" : "bg-gray-300 text-black"}`}
         >
-          Previous Year
+          <FaChevronLeft /> 
         </button>
-        <h2 className="text-xl font-bold">Year: {selectedYear}</h2>
+        <h2 className="text-xl font-bold">{format(currentMonth, "MMMM yyyy")}</h2>
         <button
-          onClick={() => handleYearChange("next")}
-          className="px-3 py-1 bg-gray-300 rounded"
+          onClick={() => handleMonthChange("next")}
+          className={`px-3 py-1 rounded ${theme === "dark" ? "bg-gray-700 text-white" : "bg-gray-300 text-black"}`}
         >
-          Next Year
+          <FaChevronRight />
         </button>
       </div>
+
+      
 
       <div className="grid grid-cols-7 gap-2">
         {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
@@ -158,7 +183,7 @@ const GeneralCalendar: React.FC<GeneralCalendarProps> = ({ theme }) => {
             <div
               key={index}
               className={`p-4 border rounded cursor-pointer ${
-                isToday(day) ? "bg-blue-500 text-white" : "bg-gray-100"
+                isToday(day) ? "bg-blue-500 text-white" : theme === "dark" ? "bg-gray-700 text-white" : "bg-gray-100"
               } ${isSameMonth(day, currentMonth) ? "" : "opacity-50"} ${isHoliday ? "bg-red-500 text-white" : ""}`}
               onClick={() => setSelectedDate(dateString)}
             >
@@ -178,14 +203,14 @@ const GeneralCalendar: React.FC<GeneralCalendarProps> = ({ theme }) => {
       </div>
 
       {selectedDate && (
-        <div className="mt-4 p-4 border rounded bg-gray-50">
+        <div className={`mt-4 p-4 border rounded ${theme === "dark" ? "bg-gray-700 text-white" : "bg-gray-50 text-black"}`}>
           <h3 className="font-bold text-lg">Manage {selectedDate}</h3>
 
           <div className="mt-2">
             <input
               type="text"
               placeholder="Add Event"
-              className="border p-2 w-full"
+              className={`border p-2 w-full ${theme === "dark" ? "bg-gray-600 text-white" : "bg-white text-black"}`}
               value={newEvent}
               onChange={(e) => setNewEvent(e.target.value)}
             />
@@ -198,7 +223,7 @@ const GeneralCalendar: React.FC<GeneralCalendarProps> = ({ theme }) => {
             <input
               type="text"
               placeholder="Add Task"
-              className="border p-2 w-full"
+              className={`border p-2 w-full ${theme === "dark" ? "bg-gray-600 text-white" : "bg-white text-black"}`}
               value={newTask}
               onChange={(e) => setNewTask(e.target.value)}
             />

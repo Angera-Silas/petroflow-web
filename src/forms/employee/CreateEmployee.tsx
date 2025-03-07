@@ -119,6 +119,8 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({ theme }) => {
   const [existingEmployees, setExistingEmployees] = useState<any[]>([]);
   const [existingUserDetails, setExistingUserDetails] = useState<any[]>([]);
   const [existingEmployeeOrganization, setExistingEmployeeOrganization] = useState<any[]>([]);
+  const [roles, setRoles] = useState<any[]>([]);
+  const [permissions, setPermissions] = useState<any[]>([]);
 
   const formBgStyle = theme === "dark" ? "bg-gray-900 text-white" : "bg-white text-black";
 
@@ -147,6 +149,18 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({ theme }) => {
       console.error("Error fetching facilities:", error);
     }
   };
+
+
+
+  const fetchRoles = async () =>{
+    try {
+      const response = await getRequest(`/roles/get/all`);
+      setRoles(response.map((role: any) => ({value: role.id.toString(), label: role.name})));
+    } catch (error) {
+      console.error("Error fetching roles:", error);
+    }
+  }
+
 
   const fetchExistingUsers = async () => {
     try {
