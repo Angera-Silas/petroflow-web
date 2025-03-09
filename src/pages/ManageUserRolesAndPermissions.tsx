@@ -1,31 +1,12 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useState, useEffect } from "react";
 import SelectInputField from "../components/inputs/SelectInputField";
 import NotificationPopup from "../components/popups/NotificationPopup";
 import Button from "../components/buttons/DashButton";
-import { getRequest, postRequest } from "../utils/api";
+import { getRequest, postRequest, putRequest } from "../utils/api";
 import ReusableTable from "../components/tables/ReusableTable";
-
-// Define Permissions Based on Role Access from Provided Menu Structure
-const rolePermissions: { [key: string]: string[] } = {
-    SYSTEM_ADMIN: [
-        "MANAGE_USERS", "MANAGE_ORGANIZATIONS", "MANAGE_FACILITIES",
-        "MANAGE_EMPLOYEES", "VIEW_REPORTS", "MANAGE_INVENTORY", "MANAGE_PRODUCTS"
-    ],
-    ORGANIZATION_ADMIN: ["MANAGE_FACILITIES", "VIEW_REPORTS", "ASSIGN_ROLES"],
-    STATION_ADMIN: ["MANAGE_EMPLOYEES", "VIEW_REPORTS"],
-    CUSTOMER_ATTENDANT: ["VIEW_ORDERS", "PROCESS_TRANSACTIONS"],
-    OIL_SPECIALIST: ["MANAGE_INVENTORY", "VIEW_REPORTS"],
-    RETAILER: ["VIEW_ORDERS", "PLACE_ORDERS"],
-    ACCOUNTANT: ["VIEW_FINANCES", "MANAGE_PAYMENTS"],
-    STATION_MANAGER: ["MANAGE_EMPLOYEES", "VIEW_REPORTS", "APPROVE_SALES"],
-    DEPARTMENT_MANAGER: ["MANAGE_DEPARTMENT", "VIEW_DEPARTMENT_REPORTS"],
-    HR_MANAGER: ["MANAGE_EMPLOYEES", "VIEW_PAYROLL"],
-    QUALITY_MARSHAL: ["INSPECT_QUALITY", "GENERATE_REPORTS"],
-};
-
-
 
 interface ManageUserPermissionsProps {
     theme: string;
@@ -39,6 +20,17 @@ interface User {
     permissions: string[];
 }
 
+interface Role {
+    roleId: string;
+    roleName: string;
+    permissions: string[];
+}
+
+interface Permission {
+    permissionId: number;
+    permissionName: string;
+}
+
 interface Column {
     label: string;
     key: string;
@@ -46,10 +38,13 @@ interface Column {
 }
 
 const ManageUserPermissions: React.FC<ManageUserPermissionsProps> = ({ theme }) => {
-    const [roles] = useState(Object.keys(rolePermissions));
+    const [roles, setRoles] = useState<Role[]>([]);
+    const [permissions, setPermissions] = useState<Permission[]>([]);
+    const [filteredRolePermissions, setFilteredRolePermissions] = useState<Permission[]>([]);
+    const [filteredUserPermissions, setFilteredUserPermissions] = useState<Permission[]>([]);
     const [users, setUsers] = useState<User[]>([]);
     const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
-    const [selectedRole, setSelectedRole] = useState("");
+    const [selectedRole, setSelectedRole] = useState<string>("");
     const [selectedUser, setSelectedUser] = useState<number | null>(null);
     const [userPermissions, setUserPermissions] = useState<string[]>([]);
     const [customPermissions, setCustomPermissions] = useState<string[]>([]);
@@ -59,10 +54,44 @@ const ManageUserPermissions: React.FC<ManageUserPermissionsProps> = ({ theme }) 
         { label: "Role", key: "role" },
         { label: "Permissions", key: "permissions" }
     ]);
+    const [roleSearchTerm, setRoleSearchTerm] = useState<string>("");
+    const [userSearchTerm, setUserSearchTerm] = useState<string>("");
 
     useEffect(() => {
+        fetchRolesAndPermissions();
         fetchUsers();
     }, []);
+
+    useEffect(() => {
+        filterRolePermissions();
+    }, [roleSearchTerm, permissions]);
+
+    useEffect(() => {
+        filterUserPermissions();
+    }, [userSearchTerm, permissions]);
+
+    const fetchRolesAndPermissions = async () => {
+        try {
+            const rolesResponse = await getRequest(`/roles/all/permissions`);
+            const rolesData = rolesResponse.content.map((role: any) => ({
+                roleId: role.roleId,
+                roleName: role.roleName,
+                permissions: role.permissions
+            }));
+            setRoles(rolesData);
+
+            const permissionsResponse = await getRequest(`/permissions/get/all`);
+            const permissionsData = permissionsResponse.map((permission: any) => ({
+                permissionId: permission.id,
+                permissionName: permission.name
+            }));
+            setPermissions(permissionsData);
+            setFilteredRolePermissions(permissionsData);
+            setFilteredUserPermissions(permissionsData);
+        } catch (error) {
+            setNotification({ title: "Error", message: "Failed to fetch roles and permissions", type: "error" });
+        }
+    };
 
     const fetchUsers = async () => {
         try {
@@ -88,18 +117,21 @@ const ManageUserPermissions: React.FC<ManageUserPermissionsProps> = ({ theme }) 
             setNotification({ title: "Error", message: "Failed to fetch users", type: "error" });
         }
     };    
-    
 
     const handleRoleChange = (role: string) => {
         setSelectedRole(role);
-        setUserPermissions(rolePermissions[role] || []);
+        const rolePermissions = roles.find(r => r.roleName === role)?.permissions || [];
+        setUserPermissions(rolePermissions);
         setFilteredUsers(users.filter(user => user.role === role));
     };
 
     const handleUserChange = (userId: number) => {
         setSelectedUser(userId);
         const user = users.find((user) => user.userId === userId);
-        setCustomPermissions(user?.permissions || []);
+        if (user) {
+            setSelectedRole(user.role);
+            setCustomPermissions(user.permissions);
+        }
     };
 
     const togglePermission = (permission: string) => {
@@ -112,7 +144,7 @@ const ManageUserPermissions: React.FC<ManageUserPermissionsProps> = ({ theme }) 
         if (selectedUser === null) return;
         try {
             const payload = { userId: selectedUser, permissions: customPermissions };
-            await postRequest("/users/permissions/update", payload);
+            await putRequest("/users/permissions/update", payload);
             setNotification({ title: "Success", message: "Permissions updated successfully", type: "success" });
         } catch (error) {
             setNotification({ title: "Error", message: "Failed to update permissions", type: "error" });
@@ -130,10 +162,24 @@ const ManageUserPermissions: React.FC<ManageUserPermissionsProps> = ({ theme }) 
         });
     };
 
+    const filterRolePermissions = () => {
+        const filtered = permissions.filter(permission =>
+            permission.permissionName.toLowerCase().includes(roleSearchTerm.toLowerCase())
+        );
+        setFilteredRolePermissions(filtered);
+    };
+
+    const filterUserPermissions = () => {
+        const filtered = permissions.filter(permission =>
+            permission.permissionName.toLowerCase().includes(userSearchTerm.toLowerCase())
+        );
+        setFilteredUserPermissions(filtered);
+    };
+
     const usersData = users.map(user => ({
         name: `${user.firstname} ${user.lastname}`,
         role: user.role,
-        permissions: user.permissions.join(",  "),
+        permissions: user.permissions.join(", "),
         userId: user.userId.toString()
     }));
 
@@ -149,7 +195,7 @@ const ManageUserPermissions: React.FC<ManageUserPermissionsProps> = ({ theme }) 
             )}
             <h1 className="text-2xl font-semibold mb-4">User Permissions & Roles</h1>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-2">
                 {/* Role-Based Permissions */}
                 <div className={`p-4 rounded-md shadow-md ${theme === "dark" ? "bg-gray-700" : "bg-white"}`}>
                     <h2 className="text-xl font-semibold mb-2">Role-Based Permissions</h2>
@@ -158,14 +204,31 @@ const ManageUserPermissions: React.FC<ManageUserPermissionsProps> = ({ theme }) 
                         name="role"
                         value={selectedRole}
                         onChange={(e) => handleRoleChange(e.target.value)}
-                        options={roles.map((role) => ({ label: role, value: role }))}
+                        options={roles.map((role) => ({ label: role.roleName, value: role.roleName }))}
                         theme={theme}
                     />
-                    <ul className="mt-3 border p-3 rounded">
-                        {userPermissions.map((perm) => (
-                            <li key={perm} className="text-sm">{perm}</li>
+                    <div className="mt-3">
+                        <input
+                            type="text"
+                            placeholder="Search permissions..."
+                            value={roleSearchTerm}
+                            onChange={(e) => setRoleSearchTerm(e.target.value)}
+                            className="w-full p-2 border rounded"
+                        />
+                    </div>
+                    <div className="mt-3 border p-2 rounded">
+                        {filteredRolePermissions.map((perm) => (
+                            <div key={perm.permissionId} className="flex items-center flex-wrap">
+                                <input
+                                    type="checkbox"
+                                    checked={userPermissions.includes(perm.permissionName)}
+                                    onChange={() => togglePermission(perm.permissionName)}
+                                    className="mr-2 text-xm"
+                                />
+                                <label className="text-sm">{perm.permissionName}</label>
+                            </div>
                         ))}
-                    </ul>
+                    </div>
                 </div>
 
                 {/* User-Specific Permissions */}
@@ -179,16 +242,25 @@ const ManageUserPermissions: React.FC<ManageUserPermissionsProps> = ({ theme }) 
                         options={filteredUsers.map((user) => ({ label: user.firstname + " " + user.lastname, value: user.userId.toString() }))}
                         theme={theme}
                     />
+                    <div className="mt-3">
+                        <input
+                            type="text"
+                            placeholder="Search permissions..."
+                            value={userSearchTerm}
+                            onChange={(e) => setUserSearchTerm(e.target.value)}
+                            className="w-full p-2 border rounded"
+                        />
+                    </div>
                     <div className="mt-3 border p-3 rounded">
-                        {userPermissions.map((perm) => (
-                            <div key={perm} className="flex items-center">
+                        {filteredUserPermissions.map((perm) => (
+                            <div key={perm.permissionId} className="flex items-center flex-wrap">
                                 <input
                                     type="checkbox"
-                                    checked={customPermissions.includes(perm)}
-                                    onChange={() => togglePermission(perm)}
+                                    checked={customPermissions.includes(perm.permissionName)}
+                                    onChange={() => togglePermission(perm.permissionName)}
                                     className="mr-2"
                                 />
-                                <label className="text-sm">{perm}</label>
+                                <label className="text-sm">{perm.permissionName}</label>
                             </div>
                         ))}
                     </div>
