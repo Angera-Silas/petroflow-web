@@ -67,20 +67,27 @@ const ManageUserPermissions: React.FC<ManageUserPermissionsProps> = ({ theme }) 
     const fetchUsers = async () => {
         try {
             const response = await getRequest(`/employees/permissions`);
-            const usersData = response.content.map((user: any) => ({
+            const usersData = response.content.map(
+                (user: { userId: any; firstname: any; lastname: any; roleName: any; 
+                    department:any; facilityId: any; facilityName: any; organizationId: any; 
+                    organizationName: any; permissions: any; }) => ({
                 userId: user.userId,
                 firstname: user.firstname,
                 lastname: user.lastname,
-                role: user.role,
-                permissions: user.permissions.split(", "), // Assuming permissions are comma-separated
+                role: user.roleName, // Correct property name
+                department: user.department,
+                facilityId: user.facilityId,
+                facilityName: user.facilityName,
+                organizationId: user.organizationId,
+                organizationName: user.organizationName,
+                permissions: user.permissions, // No need to split, it's already an array
             }));
             setUsers(usersData);
             setFilteredUsers(usersData);
         } catch (error) {
             setNotification({ title: "Error", message: "Failed to fetch users", type: "error" });
         }
-    };
-
+    };    
     
 
     const handleRoleChange = (role: string) => {
@@ -126,7 +133,7 @@ const ManageUserPermissions: React.FC<ManageUserPermissionsProps> = ({ theme }) 
     const usersData = users.map(user => ({
         name: `${user.firstname} ${user.lastname}`,
         role: user.role,
-        permissions: user.permissions.join(", "),
+        permissions: user.permissions.join(",  "),
         userId: user.userId.toString()
     }));
 
