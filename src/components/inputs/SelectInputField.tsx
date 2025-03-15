@@ -8,6 +8,7 @@ interface SelectInputFieldProps {
   selectedValue?: string;
   onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
   options: { label: string; value: string }[];
+  disabled?: boolean; // Optional disabled prop
 }
 
 const SelectInputField: React.FC<SelectInputFieldProps> = ({ 
@@ -17,7 +18,8 @@ const SelectInputField: React.FC<SelectInputFieldProps> = ({
   value, 
   selectedValue, 
   onChange, 
-  options 
+  options,
+  disabled = false // Default value is false
 }) => {
   return (
     <div className="flex flex-col">
@@ -28,6 +30,7 @@ const SelectInputField: React.FC<SelectInputFieldProps> = ({
         name={name}
         value={value || selectedValue || ""}
         onChange={onChange}
+        disabled={disabled} // Apply the disabled prop
         className={`border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 
           ${theme === "dark" ? "bg-gray-800 text-white border-gray-700" : "bg-white text-black border-gray-300"}
         `}

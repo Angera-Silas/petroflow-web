@@ -44,8 +44,6 @@ const columns = [
   { key: "Job Title", label: "Job Title" },
   { key: "Email", label: "Email" },
   { key: "Phone Number", label: "Phone Number" },
-  { key: "Organization", label: "Organization" },
-  { key: "Facility", label: "Facility" },
   { key: "Department", label: "Department" },
   { key: "Role", label: "Role" },
 ];
@@ -79,7 +77,7 @@ const ManageEmployees: React.FC<ManageEmployees> = ({ theme }) => {
   const [modalType, setModalType] = useState<string>("");
   const [notification, setNotification] = useState<{ title: string; message: string; type: "success" | "error" | "info" | "warning"; onClose?: () => void } | null>(null);
   const [currentPage, setCurrentPage] = useState<number>(0);
-  const [visibleColumns, setVisibleColumns] = useState<Column[]>(columns.filter(col => col.key !== "Email" && col.key !== "Phone Number"));
+  const [visibleColumns, setVisibleColumns] = useState<Column[]>(columns.filter(col => col.key !== "Email"));
   const [password, setPassword] = useState("");
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
   const [actionType, setActionType] = useState<"delete" | "update">();
@@ -97,15 +95,15 @@ const ManageEmployees: React.FC<ManageEmployees> = ({ theme }) => {
           employeeResponse = await getRequest("/organization-employee/details/get/all");
           break;
         case "ORGANIZATION_ADMIN":
-          employeeResponse = await getRequest(`/organization-employee/details/get/${user.organizationId}/details`);
+          employeeResponse = await getRequest(`/organization-employee/details/get/${user.organizationId}`);
           break;
         case "STATION_MANAGER":
         case "DEPARTMENT_MANAGER":
         case "QUALITY_MARSHAL":
-          employeeResponse = await getRequest(`/organization-employeedetails/get/${user.organizationId}/facility/${user.facilityId}/details`);
+          employeeResponse = await getRequest(`/organization-employee/details/get/${user.organizationId}/facility/${user.facilityId}`);
           break;
         case "RETAILER":
-          employeeResponse = await getRequest(`/organization-employee/details/get/${user.organizationId}/details`);
+          employeeResponse = await getRequest(`/organization-employee/details/get/${user.organizationId}`);
           break;
         default:
           throw new Error("Invalid user role");
@@ -176,8 +174,6 @@ const ManageEmployees: React.FC<ManageEmployees> = ({ theme }) => {
     "Full Name": `${employee.firstname} ${employee.lastname}`,
     Role: employee.role,
     Email: employee.email,
-    Organization: employee.organizationName,
-    Facility: employee.facilityName,
     Department: employee.department,
     "Employment Type": employee.employmentType,
     "Job Title": employee.jobTitle,

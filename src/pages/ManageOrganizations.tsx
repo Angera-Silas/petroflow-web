@@ -99,7 +99,7 @@ const ManageOrganizations: React.FC<ManageOrganizationsProps> = ({ theme }) => {
 
     const handleViewUsers = async (orgId: number) => {
         try {
-            const response = await getRequest(`/employees/details/get/${orgId}`);
+            const response = await getRequest(`/organization-employee/details/get/${orgId}`);
             if (!response) {
                 throw new Error("Invalid response from server");
             }
@@ -139,7 +139,7 @@ const ManageOrganizations: React.FC<ManageOrganizationsProps> = ({ theme }) => {
 
     const handleRemoveFacility = async (facilityId: number) => {
         try {
-            await deleteRequest(`/facilities/delete/${facilityId}`);
+            await deleteRequest(`/facilities/deleteFacility/${facilityId}`);
             showNotification("Success", "Facility removed", "success");
             if (selectedOrg) {
                 handleViewFacilities(selectedOrg.orgId);

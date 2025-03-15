@@ -21,6 +21,11 @@ import OrganizationAdminDashboard from "./pages/dashboards/OrganizationAdminDash
 import QualityMarshalDashboard from "./pages/dashboards/QualityMarshalDashboard";
 import ManageUserPermissions from "./pages/ManageUserRolesAndPermissions";
 import ManageOrganizations from "./pages/ManageOrganizations";
+import ManageRolesAndPermissions from "./pages/ManageRolesAndPermissions";
+import UserProfileView from "./pages/UserProfileView";
+import ProductManagement from "./pages/ProductManagement";
+import SellPoints from "./pages/SellPoints";
+import ManageEmployeeShifts from "./pages/ManageEmployeeShifts";
 
 const RoutesComponent = () => {
   const [theme, setTheme] = useState(() => localStorage.getItem("theme") || "light");
@@ -61,7 +66,14 @@ const RoutesComponent = () => {
           <Route path="/retailer-dashboard" element={<RetailerDashboard />} />
           <Route path="/companies/manage" element={<ManageOrganizations theme={theme} />} />
           <Route path="/users/manage/permissions" element={<ManageUserPermissions theme={theme} />} />
-          
+          <Route path="/users/roles/manage" element={<ManageRolesAndPermissions theme={theme} />} />
+          <Route path="/users/view" element={<UserProfileView theme={theme}/>} />
+          <Route path="/companies/view" element={<NotFound theme = {theme}/>} />
+          <Route path="/facilities/view" element={<NotFound theme = {theme}/>} />
+          <Route path="/employees/view" element={<NotFound theme = {theme}/>} />
+          <Route path="/employees/shifts" element={<ManageEmployeeShifts theme = {theme}/>} />
+          <Route path="/products/manage" element={<ProductManagement theme = {theme}/>} />
+          <Route path="/sales/sell-points" element={<SellPoints theme = {theme}/>} />
         </Route>
 
         {/* Catch-all route for undefined paths */}

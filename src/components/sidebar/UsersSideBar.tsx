@@ -35,8 +35,8 @@ const menuItems = [
       { name: "Add User", path: "/users/add" ,roles: ["SYSTEM_ADMIN"] },
       { name: "Manage Users", path: "/users/manage",roles: ["SYSTEM_ADMIN"]  },
       { name: "View User", path: "/users/view" ,roles: ["SYSTEM_ADMIN"] },
-      { name: "User Roles", path: "/users/roles" ,roles: ["SYSTEM_ADMIN"] },
-      { name: "Manage Permissions", path: "/users/manage/permissions",roles: ["SYSTEM_ADMIN"]  },
+      { name: "Roles & Permissions", path: "/users/roles/manage" ,roles: ["SYSTEM_ADMIN"] },
+      { name: "User Permissions", path: "/users/manage/permissions",roles: ["SYSTEM_ADMIN"]  },
     ],
   },
   
@@ -68,14 +68,11 @@ const menuItems = [
     name: "Sales", icon: <FaChartBar />, 
     roles: ["STATION_MANAGER", "RETAILER", "ACCOUNTANT", "DEPARTMENT_MANAGER"], 
     subItems: [
-      { name: "Record Sale", path: "/sales/record", roles: ["RETAILER", "STATION_MANAGER"] },
+      { name: "Sell Points", path: "/sales/sell-points", 
+        roles: ["STATION_MANAGER", "RETAILER", "ACCOUNTANT", "DEPARTMENT_MANAGER"] },
       { name: "Approve Sales", path: "/sales/approve", roles: ["STATION_MANAGER", "DEPARTMENT_MANAGER"] },
       { name: "Track Defaulters", path: "/sales/defaulters", roles: ["ACCOUNTANT"] },
       { name: "Sales Summary", path: "/sales/summary", roles: ["ACCOUNTANT", "DEPARTMENT_MANAGER", "STATION_MANAGER"] },
-      { name: "Search Records", path: "/sales/search", 
-        roles: ["STATION_MANAGER", "RETAILER", "ACCOUNTANT", "DEPARTMENT_MANAGER"] },
-      { name: "Edit Sale Record", path: "/sales/edit", 
-        roles: ["STATION_MANAGER", "RETAILER", "ACCOUNTANT", "DEPARTMENT_MANAGER"] },
       { name: "Process Refund", path: "/sales/refund" , 
         roles: ["STATION_MANAGER", "RETAILER", "ACCOUNTANT", "DEPARTMENT_MANAGER"]},
       { name: "Payments History", path: "/sales/payments-history" , 
@@ -110,6 +107,17 @@ const menuItems = [
     ],
   },
   {
+    name: "Products", icon: <FaBox />, 
+    roles: ["SYSTEM_ADMIN", "DEPARTMENT_MANAGER", "QUALITY_MARSHAL","STATION_MANAGER"], 
+    subItems: [
+      { name: "Add Product", path: "/products/manage", roles: ["QUALITY_MARSHAL", "SYSTEM_ADMIN","STATION_MANAGER"] },
+      { name: "View Products", path: "/products/view",
+        roles: ["SYSTEM_ADMIN", "DEPARTMENT_MANAGER", "QUALITY_MARSHAL","STATION_MANAGER"]},
+      { name: "Product Status", path: "/products/status", 
+        roles: ["SYSTEM_ADMIN", "DEPARTMENT_MANAGER", "QUALITY_MARSHAL","STATION_MANAGER"]},
+    ],
+  },
+  {
     name: "Inventory", icon: <FaWarehouse />, 
     roles: ["SYSTEM_ADMIN", "QUALITY_MARSHAL","STATION_MANAGER"], 
     subItems: [
@@ -125,19 +133,7 @@ const menuItems = [
         roles: ["SYSTEM_ADMIN", "QUALITY_MARSHAL","STATION_MANAGER"] },
     ],
   },
-  {
-    name: "Products", icon: <FaBox />, 
-    roles: ["SYSTEM_ADMIN", "DEPARTMENT_MANAGER", "QUALITY_MARSHAL","STATION_MANAGER"], 
-    subItems: [
-      { name: "Add Product", path: "/products/add", roles: ["QUALITY_MARSHAL", "SYSTEM_ADMIN","STATION_MANAGER"] },
-      { name: "Remove Product", path: "/products/remove", roles: ["QUALITY_MARSHAL","SYSTEM_ADMIN","STATION_MANAGER"] },
-      { name: "Update Product", path: "/products/update", roles: ["SYSTEM_ADMIN", "DEPARTMENT_MANAGER","STATION_MANAGER"] },
-      { name: "View Products", path: "/products/view",
-        roles: ["SYSTEM_ADMIN", "DEPARTMENT_MANAGER", "QUALITY_MARSHAL","STATION_MANAGER"]},
-      { name: "Product Status", path: "/products/status", 
-        roles: ["SYSTEM_ADMIN", "DEPARTMENT_MANAGER", "QUALITY_MARSHAL","STATION_MANAGER"]},
-    ],
-  },
+  
   {
     name: "Reports", icon: <FaRegChartBar />, 
     roles: ["SYSTEM_ADMIN", "ACCOUNTANT", "DEPARTMENT_MANAGER"], 
