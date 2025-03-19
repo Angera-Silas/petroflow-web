@@ -1,5 +1,5 @@
 import BarChart from "../../components/charts/BarChart";
-import PivotTable from "../../components/tables/PivotTable";
+
 import { getRequest } from "../../utils/api";
 
 
@@ -40,7 +40,7 @@ const DepartmentManagerDashboard = () => {
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-6">Department Manager Dashboard</h1>
       <BarChart data={employeePerformance} labels={labels} theme="dark" />
-      <PivotTable data={salesReports} columns={["Sales", "Revenue"]} rowKey="Month" theme="dark" />
+     
     </div>
   );
 };

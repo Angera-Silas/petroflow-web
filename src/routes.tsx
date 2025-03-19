@@ -26,9 +26,14 @@ import UserProfileView from "./pages/UserProfileView";
 import ProductManagement from "./pages/ProductManagement";
 import SellPoints from "./pages/SellPoints";
 import ManageEmployeeShifts from "./pages/ManageEmployeeShifts";
+import ManageInventory from "./pages/ManageInventory";
+import PumpManagement from "./pages/PumpManagement";
 
 const RoutesComponent = () => {
-  const [theme, setTheme] = useState(() => localStorage.getItem("theme") || "light");
+  const [theme, setTheme] = useState(() => {
+    const savedTheme = localStorage.getItem("theme");
+    return savedTheme ? savedTheme : "dark"; // Default to "dark" if no theme is saved
+  });
 
   useEffect(() => {
     document.documentElement.classList.remove("light", "dark");
@@ -47,37 +52,35 @@ const RoutesComponent = () => {
         <Route path="/" element={<SplashScreen theme={theme} />} />
         <Route path="/login" element={<Login theme={theme} />} />
         <Route path="/reset-password" element={<ResetPassword theme={theme} />} />
+        {/* Catch-all route for undefined paths */}
+        <Route path="*" element={<NotFound theme={theme} />} />
 
         {/* Protected Routes (Require Login, Wrapped in Layout) */}
         <Route element={<AppLayout theme={theme} toggleTheme={toggleTheme} />}>
-          <Route path="/system-admin-dashboard" element={<AdminDashboard theme={theme} />} />
-          <Route path="/users/add" element={<CreateNewUser theme={theme} />} />
-          <Route path="/companies/add" element={<AddOrganizationPage theme={theme} />} />
-          <Route path="/employees/add" element={<CreateNewEmployee theme={theme} />} />
-          <Route path="/facilities/add" element={<CreateNewFacility theme={theme} />} />
-          <Route path="/calendar" element={<GeneralCalendar theme={theme} />} />
-          <Route path="/about" element={<AboutUs theme={theme}/>} />
-          <Route path="/employees/manage" element={<ManageEmployees theme={theme} />} />
-          <Route path="/users/manage" element={<ManageUsers theme={theme} />} />
-          <Route path="/station-manager-dashboard" element={<StationManagerDashboard theme={theme} />} />
-          <Route path="/org-admin-dashboard" element={<OrganizationAdminDashboard theme={theme} />} />
-          <Route path="/quality-marshal-dashboard" element={<QualityMarshalDashboard />} />
-          <Route path="/department-manager-dashboard" element={<DepartmentManagerDashboard  />} />
-          <Route path="/retailer-dashboard" element={<RetailerDashboard />} />
-          <Route path="/companies/manage" element={<ManageOrganizations theme={theme} />} />
-          <Route path="/users/manage/permissions" element={<ManageUserPermissions theme={theme} />} />
-          <Route path="/users/roles/manage" element={<ManageRolesAndPermissions theme={theme} />} />
-          <Route path="/users/view" element={<UserProfileView theme={theme}/>} />
-          <Route path="/companies/view" element={<NotFound theme = {theme}/>} />
-          <Route path="/facilities/view" element={<NotFound theme = {theme}/>} />
-          <Route path="/employees/view" element={<NotFound theme = {theme}/>} />
-          <Route path="/employees/shifts" element={<ManageEmployeeShifts theme = {theme}/>} />
-          <Route path="/products/manage" element={<ProductManagement theme = {theme}/>} />
-          <Route path="/sales/sell-points" element={<SellPoints theme = {theme}/>} />
+          <Route path="system-admin-dashboard" element={<AdminDashboard theme={theme} />} />
+          <Route path="users/add" element={<CreateNewUser theme={theme} />} />
+          <Route path="companies/add" element={<AddOrganizationPage theme={theme} />} />
+          <Route path="employees/add" element={<CreateNewEmployee theme={theme} />} />
+          <Route path="facilities/add" element={<CreateNewFacility theme={theme} />} />
+          <Route path="calendar" element={<GeneralCalendar theme={theme} />} />
+          <Route path="about" element={<AboutUs theme={theme} />} />
+          <Route path="employees/manage" element={<ManageEmployees theme={theme} />} />
+          <Route path="users/manage" element={<ManageUsers theme={theme} />} />
+          <Route path="station-manager-dashboard" element={<StationManagerDashboard theme={theme} />} />  
+          <Route path="companies/manage" element={<ManageOrganizations theme={theme} />} />
+          <Route path="users/manage/permissions" element={<ManageUserPermissions theme={theme} />} />
+          <Route path="users/roles/manage" element={<ManageRolesAndPermissions theme={theme} />} />
+          <Route path="users/view" element={<UserProfileView theme={theme} />} />
+          <Route path="employees/shifts" element={<ManageEmployeeShifts theme={theme} />} />
+          <Route path="products/manage" element={<ProductManagement theme={theme} />} />
+          <Route path="sales/sell-points" element={<SellPoints theme={theme} />} />
+          <Route path="inventory/manage" element={<ManageInventory theme={theme} />} />
+          <Route path="sales/meter-reading" element={<PumpManagement theme={theme} />} />
+          
+          
+         
+  
         </Route>
-
-        {/* Catch-all route for undefined paths */}
-        <Route path="*" element={<NotFound theme = {theme}/>} />
       </Routes>
     </Router>
   );

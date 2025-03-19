@@ -11,12 +11,12 @@ interface SplashScreenProps {
 const SplashScreen: React.FC<SplashScreenProps> = ({ theme }) => {
   const navigate = useNavigate();
 
-  const getDashboardRoute = useCallback((role: string | null) => {
+  const getDashboardRoute = (role: string | null) => {
     switch (role) {
       case "SYSTEM_ADMIN":
         return "/system-admin-dashboard";
       case "ORGANIZATION_ADMIN":
-        return "/organization-dashboard";
+        return "/org-admin-dashboard";  // ✅ FIXED
       case "RETAILER":
         return "/retailer-dashboard";
       case "ACCOUNTANT":
@@ -26,11 +26,12 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ theme }) => {
       case "DEPARTMENT_MANAGER":
         return "/department-manager-dashboard";
       case "QUALITY_MARSHAL":
-        return "/quality-dashboard";
+        return "/quality-marshal-dashboard";  // ✅ FIXED (should match route)
       default:
-        return "/login"; // Default to login if role is unknown
+        return "/login"; // Default to login
     }
-  }, []);
+  };
+  
 
   const handleAutoLogin = useCallback(async (savedUsername: string, savedPassword: string) => {
     try {
@@ -49,25 +50,32 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ theme }) => {
   useEffect(() => {
     const authToken = localStorage.getItem("authToken");
     const tokenExpiry = localStorage.getItem("authTokenExpiry");
-
-    // Check if a valid token exists and is not expired
+  
     if (authToken && tokenExpiry && new Date().getTime() < parseInt(tokenExpiry)) {
-      const userRole = localStorage.getItem("authRole")?.replace(/"/g, "") || null; // Remove quotes and ensure it's a string or null
-      navigate(getDashboardRoute(userRole));
+      const userRole = localStorage.getItem("authRole")?.replace(/"/g, "") || null;
+      const targetRoute = getDashboardRoute(userRole);
+  
+      // Prevent unnecessary redirects
+      if (window.location.pathname !== targetRoute) {
+        navigate(targetRoute);
+      }
       return;
     }
-
-    // If token expired but "Remember Me" was checked, attempt auto-login
+  
     const savedUsername = localStorage.getItem("rememberedUsername");
     const savedPassword = localStorage.getItem("rememberedPassword");
-
+  
     if (savedUsername && savedPassword) {
-      handleAutoLogin(savedUsername, atob(savedPassword)); // Decode password from base64
+      handleAutoLogin(savedUsername, atob(savedPassword));
     } else {
-      // Redirect to login after splash animation
-      setTimeout(() => navigate("/login"), 4000);
+      setTimeout(() => {
+        if (window.location.pathname !== "/login") {
+          navigate("/login");
+        }
+      }, 4000);
     }
   }, [getDashboardRoute, handleAutoLogin, navigate]);
+  
 
   // Function to store login details after successful login
   const saveAuthDetails = (token: string, username: string, role: string) => {

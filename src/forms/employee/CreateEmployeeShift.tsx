@@ -4,6 +4,7 @@ import NotificationPopup from '../../components/popups/NotificationPopup';
 import Button from '../../components/buttons/Button';
 import TextInputField from '../../components/inputs/TextInputField';
 import SelectInputField from '../../components/inputs/SelectInputField';
+import { format } from 'date-fns';
 
 enum ShiftType {
     DAY_SHIFT = 'DAY_SHIFT',
@@ -37,13 +38,19 @@ interface EmployeeShift {
     employeeNo: string;
 }
 
+interface SellPoint {
+    id: number;
+    name: string;
+}
+
 const CreateEmployeeShiftForm: React.FC<CreateEmployeeShiftFormProps> = ({ theme, organizationId, facilityId, employeeShift, onSubmit }) => {
     const [formData, setFormData] = useState({
         facilityId: Number(facilityId),
         employeeNo: '',
         startDate: '',
         endDate: '',
-        type: ShiftType.DAY_SHIFT
+        type: ShiftType.DAY_SHIFT,
+        sellingPoints: [] as string[]
     });
 
     const [employees, setEmployees] = useState<Employee[]>([]);
@@ -53,6 +60,22 @@ const CreateEmployeeShiftForm: React.FC<CreateEmployeeShiftFormProps> = ({ theme
     const [selectedRole, setSelectedRole] = useState('');
     const [notification, setNotification] = useState<{ title: string; message: string; type: 'success' | 'error' | 'info' | 'warning' } | null>(null);
     const [loading, setLoading] = useState(false);
+    const [sellPoints, setSellPoints] = useState<SellPoint[]>([]);
+
+    useEffect(() => {
+        if (facilityId) {
+            const fetchSellPoints = async () => {
+                try {
+                    const response = await getRequest(`/sellpoints/get/byfacility/${facilityId}`);
+                    setSellPoints(response);
+                } catch (error) {
+                    console.error('Error fetching sell points:', error);
+                }
+            };
+
+            fetchSellPoints();
+        }
+    }, [facilityId]);
 
     useEffect(() => {
         const fetchEmployees = async () => {
@@ -80,7 +103,8 @@ const CreateEmployeeShiftForm: React.FC<CreateEmployeeShiftFormProps> = ({ theme
                 employeeNo: employeeShift.employeeNo,
                 startDate: employeeShift.shiftStart,
                 endDate: employeeShift.shiftEnd,
-                type: employeeShift.shiftType as ShiftType
+                type: employeeShift.shiftType as ShiftType,
+                sellingPoints: []
             });
         }
     }, [employeeShift]);
@@ -90,15 +114,27 @@ const CreateEmployeeShiftForm: React.FC<CreateEmployeeShiftFormProps> = ({ theme
         setFormData((prev) => ({ ...prev, [name]: value }));
     };
 
+    const handleSellingPointsChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const selectedOptions = Array.from(e.target.selectedOptions, option => option.value);
+        setFormData((prev) => ({ ...prev, sellingPoints: selectedOptions }));
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
         setNotification(null);
 
         try {
+            const dataToSend = {
+                ...formData,
+                startDate: format(new Date(formData.startDate), 'yyyy-MM-dd HH:mm:ss'),
+                endDate: format(new Date(formData.endDate), 'yyyy-MM-dd HH:mm:ss'),
+                sellingPoints: formData.sellingPoints.join(', ')
+            };
+
             if (employeeShift) {
                 // Update existing employee shift
-                await putRequest(`/shifts/update/${employeeShift.id}`, formData);
+                await putRequest(`/shifts/update/${employeeShift.id}`, dataToSend);
                 setNotification({
                     title: 'Success',
                     message: 'Employee shift updated successfully!',
@@ -106,7 +142,7 @@ const CreateEmployeeShiftForm: React.FC<CreateEmployeeShiftFormProps> = ({ theme
                 });
             } else {
                 // Create new employee shift
-                await postRequest('/shifts/add', formData);
+                await postRequest('/shifts/add', dataToSend);
                 setNotification({
                     title: 'Success',
                     message: 'Employee shift created successfully!',
@@ -121,7 +157,8 @@ const CreateEmployeeShiftForm: React.FC<CreateEmployeeShiftFormProps> = ({ theme
                 employeeNo: '',
                 startDate: '',
                 endDate: '',
-                type: ShiftType.DAY_SHIFT
+                type: ShiftType.DAY_SHIFT,
+                sellingPoints: []
             });
         } catch (error) {
             setNotification({
@@ -192,21 +229,32 @@ const CreateEmployeeShiftForm: React.FC<CreateEmployeeShiftFormProps> = ({ theme
                             value: employee.employeeNo
                         }))}
                     />
-
+                    <SelectInputField
+                        label="Selling Points"
+                        name="sellingPoints"
+                        value={formData.sellingPoints}
+                        theme={theme}
+                        onChange={handleSellingPointsChange}
+                        options={sellPoints.map(sellPoint => ({
+                            label: sellPoint.name,
+                            value: sellPoint.name
+                        }))}
+                        multiple={true}
+                    />
                     <TextInputField
-                        label="Start Date"
+                        label="Start Date/Time"
                         name="startDate"
                         value={formData.startDate}
                         onChange={handleChange}
-                        type="date"
+                        type="datetime-local"
                         theme={theme}
                     />
                     <TextInputField
-                        label="End Date"
+                        label="End Date/Time"
                         name="endDate"
                         value={formData.endDate}
                         onChange={handleChange}
-                        type="date"
+                        type="datetime-local"
                         theme={theme}
                     />
                     <SelectInputField

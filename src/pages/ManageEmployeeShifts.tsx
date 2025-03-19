@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect } from 'react';
 import { getRequest, deleteRequest } from '../utils/api';
 import NotificationPopup from '../components/popups/NotificationPopup';
@@ -7,6 +8,7 @@ import ReusableTable from '../components/tables/ReusableTable';
 import Modal from '../components/modals/Modal'; // Assuming you have a Modal component
 import { useSelector } from 'react-redux';
 import { RootState } from '../store';
+import { format } from 'date-fns';
 
 interface EmployeeShift {
     id: number;
@@ -16,6 +18,7 @@ interface EmployeeShift {
     shiftType: string;
     facilityId: number;
     employeeNo: string;
+    sellingPoints: string;
 }
 
 interface ManageEmployeeShiftsProps {
@@ -39,8 +42,18 @@ const ManageEmployeeShifts: React.FC<ManageEmployeeShiftsProps> = ({ theme }) =>
         if (facilityId) {
             const fetchEmployeeShifts = async () => {
                 try {
-                    const response = await getRequest(`/shifts/get/byfacility/${facilityId}`);
-                    setEmployeeShifts(response);
+                    const response = await getRequest(`/shifts/get/facility/${facilityId}`);
+                    const formattedResponse = response.map((shift: any) => ({
+                        id: shift.shiftId,
+                        employeeName: shift.employeeName,
+                        shiftStart: shift.startDate,
+                        shiftEnd: shift.endDate,
+                        shiftType: shift.type,
+                        facilityId: shift.facilityId,
+                        employeeNo: shift.employeeNo,
+                        sellingPoints: shift.sellingPoints
+                    }));
+                    setEmployeeShifts(formattedResponse);
                 } catch (error) {
                     console.error('Error fetching employee shifts:', error);
                 }
@@ -82,12 +95,21 @@ const ManageEmployeeShifts: React.FC<ManageEmployeeShiftsProps> = ({ theme }) =>
 
     const handleFormSubmit = () => {
         setSelectedEmployeeShift(null);
-        setIsModalOpen(false);
         if (facilityId) {
             const fetchEmployeeShifts = async () => {
                 try {
-                    const response = await getRequest(`/shifts/get/byfacility/${facilityId}`);
-                    setEmployeeShifts(response);
+                    const response = await getRequest(`/shifts/get/facility/${facilityId}`);
+                    const formattedResponse = response.map((shift: any) => ({
+                        id: shift.shiftId,
+                        employeeName: shift.employeeName,
+                        shiftStart: shift.startDate,
+                        shiftEnd: shift.endDate,
+                        shiftType: shift.type,
+                        facilityId: shift.facilityId,
+                        employeeNo: shift.employeeNo,
+                        sellingPoints: shift.sellingPoints
+                    }));
+                    setEmployeeShifts(formattedResponse);
                 } catch (error) {
                     console.error('Error fetching employee shifts:', error);
                 }
@@ -97,11 +119,17 @@ const ManageEmployeeShifts: React.FC<ManageEmployeeShiftsProps> = ({ theme }) =>
         }
     };
 
+    const formatDateTime = (dateTime: string) => {
+        const date = new Date(dateTime);
+        return format(date, 'yyyy-MM-dd HH:mm:ss');
+    };
+
     const columns = [
         { key: 'employeeName', label: 'Employee Name' },
-        { key: 'shiftStart', label: 'Shift Start' },
-        { key: 'shiftEnd', label: 'Shift End' },
+        { key: 'shiftStart', label: 'Shift Start', render: (row: EmployeeShift) => formatDateTime(row.shiftStart) },
+        { key: 'shiftEnd', label: 'Shift End', render: (row: EmployeeShift) => formatDateTime(row.shiftEnd) },
         { key: 'shiftType', label: 'Shift Type' },
+        { key: 'sellingPoints', label: 'Selling Points' },
         {
             key: 'actions',
             label: 'Actions',
@@ -118,8 +146,13 @@ const ManageEmployeeShifts: React.FC<ManageEmployeeShiftsProps> = ({ theme }) =>
 
     return (
         <div className="p-6">
+            
+            <div className='flex justify-between items-center'>
             <h1 className="text-3xl font-bold mb-6">Manage Employee Shifts</h1>
-
+                        <div className='mb-5' >
+                        <Button onClick={() => setIsModalOpen(true)}>Add New Employee Shift</Button>
+                        </div>
+                        </div>
             {notification && (
                 <NotificationPopup
                     title={notification.title}
@@ -129,7 +162,7 @@ const ManageEmployeeShifts: React.FC<ManageEmployeeShiftsProps> = ({ theme }) =>
                 />
             )}
 
-            <Button onClick={() => setIsModalOpen(true)}>Add New Employee Shift</Button>
+           
 
             <ReusableTable
                 columns={columns}

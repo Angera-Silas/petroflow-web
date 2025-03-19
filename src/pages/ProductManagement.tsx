@@ -8,7 +8,7 @@ import Modal from '../components/modals/Modal'; // Assuming you have a Modal com
 import { useSelector } from 'react-redux';
 import { RootState } from '../store';
 
-interface ProductManagementProps{
+interface ProductManagementProps {
     theme: string;
 }
 
@@ -24,7 +24,7 @@ interface Product {
     department: string;
 }
 
-const ProductManagement: React.FC<ProductManagementProps> = ({theme}) => {
+const ProductManagement: React.FC<ProductManagementProps> = ({ theme }) => {
     const [products, setProducts] = useState<Product[]>([]);
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
     const [notification, setNotification] = useState<{ title: string; message: string; type: 'success' | 'error' | 'info' | 'warning' } | null>(null);
@@ -35,12 +35,12 @@ const ProductManagement: React.FC<ProductManagementProps> = ({theme}) => {
     const user = useSelector((state: RootState) => state.user);
 
     const orgId = user.organizationId ? Number(user.organizationId) : 0;
-    const facilityId = user.facilityId ? Number(user.facilityId) : 0; 
+    const facilityId = user.facilityId ? Number(user.facilityId) : 0;
 
     useEffect(() => {
         const fetchProducts = async () => {
             try {
-                const response = await getRequest(`/products/${facilityId}`);
+                const response = await getRequest(`/products/get/facility/${facilityId}`);
                 setProducts(response);
             } catch (error) {
                 console.error('Error fetching products:', error);
@@ -85,7 +85,7 @@ const ProductManagement: React.FC<ProductManagementProps> = ({theme}) => {
         setIsModalOpen(false);
         const fetchProducts = async () => {
             try {
-                const response = await getRequest(`/products/${facilityId}`);
+                const response = await getRequest(`/products/get/facility/${facilityId}`);
                 setProducts(response);
             } catch (error) {
                 console.error('Error fetching products:', error);
@@ -117,7 +117,13 @@ const ProductManagement: React.FC<ProductManagementProps> = ({theme}) => {
 
     return (
         <div className="p-6">
-            <h1 className="text-3xl font-bold mb-6">Manage Products</h1>
+            <div className='flex justify-between items-center'>
+                <h1 className="text-3xl font-bold mb-6">Manage Products</h1>
+                <div className='mb-5' >
+                    <Button onClick={() => setIsModalOpen(true)}>Add New Product</Button>
+                </div>
+            </div>
+
 
             {notification && (
                 <NotificationPopup
@@ -128,16 +134,16 @@ const ProductManagement: React.FC<ProductManagementProps> = ({theme}) => {
                 />
             )}
 
-            <Button onClick={() => setIsModalOpen(true)}>Add New Product</Button>
+
 
             <ReusableTable
                 columns={columns}
                 data={products}
-                onRowSelect={() => {}}
+                onRowSelect={() => { }}
                 theme={theme}
                 itemsPerPage={10}
                 visibleColumns={columns}
-                onColumnVisibilityChange={() => {}}
+                onColumnVisibilityChange={() => { }}
                 rowKey="id"
             />
 

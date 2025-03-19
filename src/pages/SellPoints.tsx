@@ -114,7 +114,15 @@ const SellPoints: React.FC<SellPointProps> = ({ theme }) => {
 
     return (
         <div className="p-6">
+            <div className='flex justify-between items-center mb-6'>
             <h1 className="text-3xl font-bold mb-6">Manage Sell Points</h1>
+
+                <div className='mb-5'>
+                <Button onClick={() => setIsModalOpen(true)}>Add New Sell Point</Button>
+                </div>
+            </div>
+            
+
 
             {notification && (
                 <NotificationPopup
@@ -125,7 +133,6 @@ const SellPoints: React.FC<SellPointProps> = ({ theme }) => {
                 />
             )}
 
-            <Button onClick={() => setIsModalOpen(true)}>Add New Sell Point</Button>
 
             <ReusableTable
                 columns={columns}

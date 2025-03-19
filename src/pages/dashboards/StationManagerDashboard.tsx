@@ -2,7 +2,6 @@
 import { FaGasPump, FaMoneyBillWave, FaShoppingCart, FaExclamationTriangle } from "react-icons/fa";
 import Table from "../../components/tables/CustomTable";
 import BarChart from "../../components/charts/BarChart";
-import PivotTable from "../../components/tables/PivotTable";
 import { getRequest } from "../../utils/api";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";
@@ -51,7 +50,6 @@ const StationManagerDashboard = ({ theme }: StationManagerDashboardProps) => {
       </div>
 
       <BarChart data={fuelSales} labels={labels} theme={theme} />
-      <PivotTable data={pumpData} columns={["Sales"]} rowKey="Pump" theme={theme} />
       {/* Staff List */}
       <Table title="Staff Members" columns={["Name", "Role", "Shift"]} data={[]} theme={theme} />
 

@@ -16,6 +16,12 @@ const store = configureStore({
     user: persistedUserReducer,
     product: productReducer,
   },
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({
+      serializableCheck: {
+        ignoredActions: ["persist/PERSIST"],
+      },
+    }),
 });
 
 export type RootState = ReturnType<typeof store.getState>;

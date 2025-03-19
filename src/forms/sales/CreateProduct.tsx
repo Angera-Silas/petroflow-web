@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { postRequest, putRequest } from '../../utils/api';
+import { postRequest, putRequest, getRequest } from '../../utils/api';
 import NotificationPopup from '../../components/popups/NotificationPopup';
 import Button from '../../components/buttons/Button';
 import TextInputField from '../../components/inputs/TextInputField';
+import SelectInputField from '../../components/inputs/SelectInputField';
 
 interface CreateProductFormProps {
     theme: string;
@@ -33,13 +34,28 @@ const CreateProductForm: React.FC<CreateProductFormProps> = ({ theme, orgId, fac
         productSubCategory: '',
         orgId: orgId,
         facilityId: facilityId,
-        department: ''
+        department: '',
+        buyingPricePerUnit: '',
+        unitsAvailable: ''
     });
 
+    const [departments, setDepartments] = useState<string[]>([]);
     const [notification, setNotification] = useState<{ title: string; message: string; type: 'success' | 'error' | 'info' | 'warning' } | null>(null);
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
+        const fetchDepartments = async () => {
+            try {
+                const response = await getRequest(`/organization-employee/get/organization/${orgId}/facility/${facilityId}/departments`);
+                const departmentNames = response.map((dept: { departmentName: string }) => dept.departmentName);
+                setDepartments(departmentNames);
+            } catch (error) {
+                console.error('Error fetching departments:', error);
+            }
+        };
+
+        fetchDepartments();
+
         if (product) {
             setFormData({
                 dateAdded: product.dateAdded,
@@ -49,10 +65,12 @@ const CreateProductForm: React.FC<CreateProductFormProps> = ({ theme, orgId, fac
                 productSubCategory: product.productSubCategory,
                 orgId: product.orgId,
                 facilityId: product.facilityId,
-                department: product.department
+                department: product.department,
+                buyingPricePerUnit: '',
+                unitsAvailable: ''
             });
         }
-    }, [product]);
+    }, [orgId, facilityId, product]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
@@ -65,6 +83,9 @@ const CreateProductForm: React.FC<CreateProductFormProps> = ({ theme, orgId, fac
         setNotification(null);
 
         try {
+            let productId;
+            let organization;
+            let facility;
             if (product) {
                 // Update existing product
                 await putRequest(`/products/${product.id}`, formData);
@@ -73,15 +94,38 @@ const CreateProductForm: React.FC<CreateProductFormProps> = ({ theme, orgId, fac
                     message: 'Product updated successfully!',
                     type: 'success'
                 });
+                productId = product.id;
+                organization = product.orgId;
+                facility = product.facilityId;
             } else {
                 // Create new product
-                await postRequest('/products/create', formData);
+                const response = await postRequest('/products/create', formData);
                 setNotification({
                     title: 'Success',
                     message: 'Product created successfully!',
                     type: 'success'
                 });
+                productId = response.id;
+                organization = response.orgId;
+                facility = response.facilityId;
             }
+
+            // Add product to stock
+            const stockData = {
+                dateStocked: new Date().toISOString(),
+                productId: productId,
+                orgId: organization,
+                facilityId: facility,
+                unitsAvailable: parseFloat(formData.unitsAvailable),
+                unitsSold: 0,
+                unitsBought: parseFloat(formData.unitsAvailable),
+                unitsReturned: 0,
+                unitsDamaged: 0,
+                unitsLost: 0,
+                buyingPricePerUnit: parseFloat(formData.buyingPricePerUnit),
+                sellingPricePerUnit: 1 // Default selling price
+            };
+            await postRequest('/stocks/add', stockData);
 
             onSubmit();
             // Reset form
@@ -93,7 +137,9 @@ const CreateProductForm: React.FC<CreateProductFormProps> = ({ theme, orgId, fac
                 productSubCategory: '',
                 orgId: orgId,
                 facilityId: facilityId,
-                department: ''
+                department: '',
+                buyingPricePerUnit: '',
+                unitsAvailable: ''
             });
         } catch (error) {
             setNotification({
@@ -168,12 +214,29 @@ const CreateProductForm: React.FC<CreateProductFormProps> = ({ theme, orgId, fac
                         theme={theme}
                     />
                     <TextInputField
+                        label="Buying Price Per Unit"
+                        name="buyingPricePerUnit"
+                        value={formData.buyingPricePerUnit}
+                        onChange={handleChange}
+                        type="number"
+                        placeholder="Enter Buying Price Per Unit"
+                        theme={theme}
+                    />
+                    <TextInputField
+                        label="Units Available"
+                        name="unitsAvailable"
+                        value={formData.unitsAvailable}
+                        onChange={handleChange}
+                        type="number"
+                        placeholder="Enter Units Available"
+                        theme={theme}
+                    />
+                    <SelectInputField
                         label="Department"
                         name="department"
                         value={formData.department}
                         onChange={handleChange}
-                        type="text"
-                        placeholder="Enter Department"
+                        options={departments.map(department => ({ value: department, label: department }))}
                         theme={theme}
                     />
                 </div>

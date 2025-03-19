@@ -21,7 +21,9 @@ const AppLayout: React.FC<AppLayoutProps> = ({ theme, toggleTheme }) => {
     const username = localStorage.getItem("authUser")?.replace(/"/g, "") || null;
 
     if (!username) {
-      window.location.href = "/login";
+      if (window.location.pathname !== "/login") {
+        window.location.href = "/login"; // Redirect only if not already on the login page
+      }
       return;
     }
 
@@ -29,14 +31,18 @@ const AppLayout: React.FC<AppLayoutProps> = ({ theme, toggleTheme }) => {
       const userDetails = await getRequest(`/users/get/username/${username}`);
       if (!userDetails?.id) {
         console.error("User details not found");
-        window.location.href = "/login";
+        if (window.location.pathname !== "/login") {
+          window.location.href = "/login";
+        }
         return;
       }
 
       const employeeDetails = await getRequest(`/employees/info/${userDetails.id}`);
       if (!employeeDetails) {
         console.error("Employee details not found");
-        window.location.href = "/login";
+        if (window.location.pathname !== "/login") {
+          window.location.href = "/login";
+        }
         return;
       }
 
@@ -60,16 +66,17 @@ const AppLayout: React.FC<AppLayoutProps> = ({ theme, toggleTheme }) => {
       };
 
       dispatch(setUserData(userData)); // Store data in Redux
-
     } catch (error) {
       console.error("Error fetching user data:", error);
-      window.location.href = "/login";
+      if (window.location.pathname !== "/login") {
+        window.location.href = "/login";
+      }
     }
   };
 
   useEffect(() => {
-    fetchUserData();
-  }, []);
+    fetchUserData(); // Fetch user data asynchronously
+  }, [dispatch]);
 
   const toggleSidebar = () => {
     setIsSidebarOpen((prev) => !prev);

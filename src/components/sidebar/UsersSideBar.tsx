@@ -6,6 +6,8 @@ import {
   FaWarehouse, FaChevronDown, FaChevronRight, FaInfo
 } from 'react-icons/fa';
 import logo from '../../assets/logo.svg';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../store';
 
 // Define menu items with refined roles
 const menuItems = [
@@ -19,43 +21,49 @@ const menuItems = [
 
 
   {
-    name: "Companies", icon: <FaBuilding />, 
-    roles: ["SYSTEM_ADMIN"], 
+    name: "Companies", icon: <FaBuilding />,
+    roles: ["SYSTEM_ADMIN"],
     subItems: [
       { name: "Add New Company", path: "/companies/add", roles: ["SYSTEM_ADMIN"] },
-      { name: "Manage Companies", path: "/companies/manage",roles: ["SYSTEM_ADMIN"]  },
-      { name: "View Company", path: "/companies/view",roles: ["SYSTEM_ADMIN"]  },
+      { name: "Manage Companies", path: "/companies/manage", roles: ["SYSTEM_ADMIN"] },
+      { name: "View Company", path: "/companies/view", roles: ["SYSTEM_ADMIN"] },
     ],
   },
 
   {
-    name: "Users", icon: <FaUsers />, 
-    roles: ["SYSTEM_ADMIN"], 
+    name: "Users", icon: <FaUsers />,
+    roles: ["SYSTEM_ADMIN"],
     subItems: [
-      { name: "Add User", path: "/users/add" ,roles: ["SYSTEM_ADMIN"] },
-      { name: "Manage Users", path: "/users/manage",roles: ["SYSTEM_ADMIN"]  },
-      { name: "View User", path: "/users/view" ,roles: ["SYSTEM_ADMIN"] },
-      { name: "Roles & Permissions", path: "/users/roles/manage" ,roles: ["SYSTEM_ADMIN"] },
-      { name: "User Permissions", path: "/users/manage/permissions",roles: ["SYSTEM_ADMIN"]  },
+      { name: "Add User", path: "/users/add", roles: ["SYSTEM_ADMIN"] },
+      { name: "Manage Users", path: "/users/manage", roles: ["SYSTEM_ADMIN"] },
+      { name: "View User", path: "/users/view", roles: ["SYSTEM_ADMIN"] },
+      { name: "Roles & Permissions", path: "/users/roles/manage", roles: ["SYSTEM_ADMIN"] },
+      { name: "User Permissions", path: "/users/manage/permissions", roles: ["SYSTEM_ADMIN"] },
     ],
   },
-  
+
   {
-    name: "Facilities/Stations", icon: <FaGasPump />, 
-    roles: ["SYSTEM_ADMIN", "ORGANIZATION_ADMIN"], 
+    name: "Facilities/Stations", icon: <FaGasPump />,
+    roles: ["SYSTEM_ADMIN", "ORGANIZATION_ADMIN"],
     subItems: [
-      { name: "New Facility", path: "/facilities/add", 
-        roles: ["SYSTEM_ADMIN", "ORGANIZATION_ADMIN"] },
-      { name: "Manage Facilies", path: "/facilities/manage", 
-        roles: ["SYSTEM_ADMIN", "ORGANIZATION_ADMIN"] },
-      { name: "View Facility", path: "/facilities/view", 
-        roles: ["SYSTEM_ADMIN", "ORGANIZATION_ADMIN"] },
+      {
+        name: "New Facility", path: "/facilities/add",
+        roles: ["SYSTEM_ADMIN", "ORGANIZATION_ADMIN"]
+      },
+      {
+        name: "Manage Facilies", path: "/facilities/manage",
+        roles: ["SYSTEM_ADMIN", "ORGANIZATION_ADMIN"]
+      },
+      {
+        name: "View Facility", path: "/facilities/view",
+        roles: ["SYSTEM_ADMIN", "ORGANIZATION_ADMIN"]
+      },
     ],
   },
-  
+
   {
-    name: "Employees Mgt", icon: <FaUserPlus />, 
-    roles: ["STATION_MANAGER", "DEPARTMENT_MANAGER", "RETAILER", "ORGANIZATION_ADMIN", "SYSTEM_ADMIN"], 
+    name: "Employees Mgt", icon: <FaUserPlus />,
+    roles: ["STATION_MANAGER", "DEPARTMENT_MANAGER", "RETAILER", "ORGANIZATION_ADMIN", "SYSTEM_ADMIN"],
     subItems: [
       { name: "Add Employee", path: "/employees/add", roles: ["STATION_MANAGER", "ORGANIZATION_ADMIN", "SYSTEM_ADMIN"] },
       { name: "Manage Employees", path: "/employees/manage", roles: ["STATION_MANAGER", "ORGANIZATION_ADMIN", "SYSTEM_ADMIN"] },
@@ -65,92 +73,128 @@ const menuItems = [
     ],
   },
   {
-    name: "Sales", icon: <FaChartBar />, 
-    roles: ["STATION_MANAGER", "RETAILER", "ACCOUNTANT", "DEPARTMENT_MANAGER"], 
+    name: "Sales", icon: <FaChartBar />,
+    roles: ["STATION_MANAGER", "RETAILER", "ACCOUNTANT", "DEPARTMENT_MANAGER"],
     subItems: [
-      { name: "Sell Points", path: "/sales/sell-points", 
-        roles: ["STATION_MANAGER", "RETAILER", "ACCOUNTANT", "DEPARTMENT_MANAGER"] },
+      {
+        name: "Sell Points", path: "/sales/sell-points",
+        roles: ["STATION_MANAGER", "RETAILER", "ACCOUNTANT", "DEPARTMENT_MANAGER"]
+      },
+      {
+        name: "Manage Metre Reading", path: "/sales/meter-reading",
+        roles: ["STATION_MANAGER", "RETAILER", "ACCOUNTANT", "DEPARTMENT_MANAGER"]
+      },
       { name: "Approve Sales", path: "/sales/approve", roles: ["STATION_MANAGER", "DEPARTMENT_MANAGER"] },
       { name: "Track Defaulters", path: "/sales/defaulters", roles: ["ACCOUNTANT"] },
       { name: "Sales Summary", path: "/sales/summary", roles: ["ACCOUNTANT", "DEPARTMENT_MANAGER", "STATION_MANAGER"] },
-      { name: "Process Refund", path: "/sales/refund" , 
-        roles: ["STATION_MANAGER", "RETAILER", "ACCOUNTANT", "DEPARTMENT_MANAGER"]},
-      { name: "Payments History", path: "/sales/payments-history" , 
-        roles: ["STATION_MANAGER", "RETAILER", "ACCOUNTANT", "DEPARTMENT_MANAGER"]},
+      {
+        name: "Process Refund", path: "/sales/refund",
+        roles: ["STATION_MANAGER", "RETAILER", "ACCOUNTANT", "DEPARTMENT_MANAGER"]
+      },
+      {
+        name: "Payments History", path: "/sales/payments-history",
+        roles: ["STATION_MANAGER", "RETAILER", "ACCOUNTANT", "DEPARTMENT_MANAGER"]
+      },
     ],
   },
   {
-    name: "Incidents", icon: <FaExclamationTriangle />, 
-    roles: ["STATION_MANAGER","DEPARTMENT_MANAGER", "QUALITY_MARSHAL", "SYSTEM_ADMIN"], 
+    name: "Incidents", icon: <FaExclamationTriangle />,
+    roles: ["STATION_MANAGER", "DEPARTMENT_MANAGER", "QUALITY_MARSHAL", "SYSTEM_ADMIN"],
     subItems: [
-      { name: "Report Incident", path: "/incidents/report" , 
-        roles: ["STATION_MANAGER","DEPARTMENT_MANAGER", "QUALITY_MARSHAL", "SYSTEM_ADMIN"] },
-      { name: "Approve Incident", path: "/incidents/approve", 
-        roles: ["STATION_MANAGER","DEPARTMENT_MANAGER", "QUALITY_MARSHAL", "SYSTEM_ADMIN"] },
-      { name: "View Submitted", path: "/incidents/submitted", 
-    roles: ["STATION_MANAGER","DEPARTMENT_MANAGER", "QUALITY_MARSHAL", "SYSTEM_ADMIN"] },
-      { name: "Resolve Incident", path: "/incidents/resolve", roles: ["QUALITY_MARSHAL","SYSTEM_ADMIN", "STATION_MANAGER"] },
+      {
+        name: "Report Incident", path: "/incidents/report",
+        roles: ["STATION_MANAGER", "DEPARTMENT_MANAGER", "QUALITY_MARSHAL", "SYSTEM_ADMIN"]
+      },
+      {
+        name: "Approve Incident", path: "/incidents/approve",
+        roles: ["STATION_MANAGER", "DEPARTMENT_MANAGER", "QUALITY_MARSHAL", "SYSTEM_ADMIN"]
+      },
+      {
+        name: "View Submitted", path: "/incidents/submitted",
+        roles: ["STATION_MANAGER", "DEPARTMENT_MANAGER", "QUALITY_MARSHAL", "SYSTEM_ADMIN"]
+      },
+      { name: "Resolve Incident", path: "/incidents/resolve", roles: ["QUALITY_MARSHAL", "SYSTEM_ADMIN", "STATION_MANAGER"] },
     ],
   },
   {
-    name: "Requests", icon: <FaHandshake />, 
-    roles: ["ALL"], 
+    name: "Requests", icon: <FaHandshake />,
+    roles: ["ALL"],
     subItems: [
-      { name: "Submit Request", path: "/requests/submit" ,
-        roles: ["ALL"]},
-      { name: "Approve Request", path: "/requests/approve" ,
-        roles:["DEPARTMENT_MANAGER", "STATION_MANAGER", "ORGANIZATION_ADMIN"] },
-      { name: "Review Request", path: "/requests/review", 
-        roles: ["DEPARTMENT_MANAGER", "STATION_MANAGER", "ORGANIZATION_ADMIN", "SYSTEM_ADMIN", "QUALITY_MARSHAL", "RETAILER"] },
+      {
+        name: "Submit Request", path: "/requests/submit",
+        roles: ["ALL"]
+      },
+      {
+        name: "Approve Request", path: "/requests/approve",
+        roles: ["DEPARTMENT_MANAGER", "STATION_MANAGER", "ORGANIZATION_ADMIN"]
+      },
+      {
+        name: "Review Request", path: "/requests/review",
+        roles: ["DEPARTMENT_MANAGER", "STATION_MANAGER", "ORGANIZATION_ADMIN", "SYSTEM_ADMIN", "QUALITY_MARSHAL", "RETAILER"]
+      },
       { name: "Request Status", path: "/requests/status", roles: ["ALL"] },
       { name: "View Submitted", path: "/requests/submitted", roles: ["ALL"] },
     ],
   },
   {
-    name: "Products", icon: <FaBox />, 
-    roles: ["SYSTEM_ADMIN", "DEPARTMENT_MANAGER", "QUALITY_MARSHAL","STATION_MANAGER"], 
+    name: "Products", icon: <FaBox />,
+    roles: ["SYSTEM_ADMIN", "DEPARTMENT_MANAGER", "QUALITY_MARSHAL", "STATION_MANAGER"],
     subItems: [
-      { name: "Add Product", path: "/products/manage", roles: ["QUALITY_MARSHAL", "SYSTEM_ADMIN","STATION_MANAGER"] },
-      { name: "View Products", path: "/products/view",
-        roles: ["SYSTEM_ADMIN", "DEPARTMENT_MANAGER", "QUALITY_MARSHAL","STATION_MANAGER"]},
-      { name: "Product Status", path: "/products/status", 
-        roles: ["SYSTEM_ADMIN", "DEPARTMENT_MANAGER", "QUALITY_MARSHAL","STATION_MANAGER"]},
+      { name: "Manage Products", path: "/products/manage", roles: ["QUALITY_MARSHAL", "SYSTEM_ADMIN", "STATION_MANAGER"] },
+      {
+        name: "View Product", path: "/products/view",
+        roles: ["SYSTEM_ADMIN", "DEPARTMENT_MANAGER", "QUALITY_MARSHAL", "STATION_MANAGER"]
+      },
+      {
+        name: "Product Status", path: "/products/status",
+        roles: ["SYSTEM_ADMIN", "DEPARTMENT_MANAGER", "QUALITY_MARSHAL", "STATION_MANAGER"]
+      },
     ],
   },
   {
-    name: "Inventory", icon: <FaWarehouse />, 
-    roles: ["SYSTEM_ADMIN", "QUALITY_MARSHAL","STATION_MANAGER"], 
+    name: "Inventory", icon: <FaWarehouse />,
+    roles: ["SYSTEM_ADMIN", "QUALITY_MARSHAL", "STATION_MANAGER"],
     subItems: [
-      { name: "Add Item", path: "/inventory/add", 
-        roles: ["SYSTEM_ADMIN", "QUALITY_MARSHAL","STATION_MANAGER"] },
-      { name: "Remove Item", path: "/inventory/remove", 
-        roles: ["SYSTEM_ADMIN", "QUALITY_MARSHAL","STATION_MANAGER"] },
-      { name: "Update Item", path: "/inventory/update", 
-        roles: ["SYSTEM_ADMIN", "QUALITY_MARSHAL","STATION_MANAGER"] },
-      { name: "View Items", path: "/inventory/view" , 
-        roles: ["SYSTEM_ADMIN", "QUALITY_MARSHAL","STATION_MANAGER"]},
-      { name: "Item Status", path: "/inventory/status", 
-        roles: ["SYSTEM_ADMIN", "QUALITY_MARSHAL","STATION_MANAGER"] },
+      {
+        name: "Manage Inventory", path: "/inventory/manage",
+        roles: ["SYSTEM_ADMIN", "QUALITY_MARSHAL", "STATION_MANAGER"]
+      },
+      {
+        name: "View Item", path: "/inventory/view",
+        roles: ["SYSTEM_ADMIN", "QUALITY_MARSHAL", "STATION_MANAGER"]
+      },
+      {
+        name: "Item Status", path: "/inventory/status",
+        roles: ["SYSTEM_ADMIN", "QUALITY_MARSHAL", "STATION_MANAGER"]
+      },
     ],
   },
-  
+
   {
-    name: "Reports", icon: <FaRegChartBar />, 
-    roles: ["SYSTEM_ADMIN", "ACCOUNTANT", "DEPARTMENT_MANAGER"], 
+    name: "Reports", icon: <FaRegChartBar />,
+    roles: ["SYSTEM_ADMIN", "ACCOUNTANT", "DEPARTMENT_MANAGER"],
     subItems: [
       { name: "Sales Report", path: "/reports/sales" },
       { name: "Incident Report", path: "/reports/incidents" },
       { name: "Request Report", path: "/reports/requests" },
       { name: "Inventory Report", path: "/reports/inventory" },
       { name: "Employee Performance", path: "/reports/employees" },
-      { name: "Facility Performance", path: "/reports/facilities" ,
-        roles:["RETAILER", "ORGANIZATION_ADMIN", "STATION_MANAGER","SYSTEM_ADMIN"] },
-      { name: "Organization Performance", path: "/reports/organizations" , 
-        roles:["RETAILER", "ORGANIZATION_ADMIN","SYSTEM_ADMIN"] },
-      { name: "Product Sales", path: "/reports/products", 
-        roles:["RETAILER", "ORGANIZATION_ADMIN", "STATION_MANAGER", "QUALITY_MARSHAL"] },
-      { name: "Expenditures", path: "/reports/expenditures" , 
-        roles:["ACCOUNTANT", "DEPARTMENT_MANAGER"] },
+      {
+        name: "Facility Performance", path: "/reports/facilities",
+        roles: ["RETAILER", "ORGANIZATION_ADMIN", "STATION_MANAGER", "SYSTEM_ADMIN"]
+      },
+      {
+        name: "Organization Performance", path: "/reports/organizations",
+        roles: ["RETAILER", "ORGANIZATION_ADMIN", "SYSTEM_ADMIN"]
+      },
+      {
+        name: "Product Sales", path: "/reports/products",
+        roles: ["RETAILER", "ORGANIZATION_ADMIN", "STATION_MANAGER", "QUALITY_MARSHAL"]
+      },
+      {
+        name: "Expenditures", path: "/reports/expenditures",
+        roles: ["ACCOUNTANT", "DEPARTMENT_MANAGER"]
+      },
       { name: "Summary", path: "/reports/summary" },
     ],
   },
@@ -169,13 +213,14 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ isOpen, theme }) => {
   const [openSubMenus, setOpenSubMenus] = useState<string[]>([]);
   const [userRole, setUserRole] = useState<string | null>(null);
 
+  const user = useSelector((state: RootState) => state.user);
+
   useEffect(() => {
-    // Get role from local storage
-    const storedRole = localStorage.getItem("authRole");
-    if (storedRole) {
-      setUserRole(JSON.parse(storedRole));
-    }
-  }, []);
+    const role = user.role;
+    setUserRole(role);
+  }
+    , [user]);
+
 
   useEffect(() => {
     // Auto-expand submenus if current path matches

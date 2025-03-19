@@ -62,19 +62,21 @@ const roleOptions = [
 ];
 
 const departmentOptions = [
+  { label: "Management", value: "Management" },
+  { label: "General Sales", value: "Sales" },
+  { label: "Sales (Fuel & Engine Oil)", value: "Sales_Fuel" },
+  { label: "Sales (Gas_Cylinders)", value: "Sales_Gas_Cylinders" },
+  { label: "Sales(Shop)", value: "Sales_Shop" },
   { label: "Garage", value: "Garage" },
   { label: "Carwash", value: "Carwash" },
-  { label: "Sales (Fuel)", value: "Sales_Petrol" },
   { label: "Accounts", value: "Accounts" },
   { label: "ICT", value: "ICT" },
   { label: "Customer Service", value: "Customer_Service" },
-  { label: "Maintenance", value: "Maintenance" },
-  { label: "Security", value: "Security" },
   { label: "Human Resources", value: "Human_Resources" },
   { label: "Marketing", value: "Marketing" },
   { label: "Quality Control", value: "Quality_Control" },
   { label: "Retail (Convenience Store)", value: "Retail_Convenience_Store" },
-  { label: "Fuel Management", value: "Fuel_Management" },
+  
 ];
 
 const EmployeeForm: React.FC<EmployeeFormProps> = ({ theme }) => {

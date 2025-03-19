@@ -42,7 +42,7 @@ const Login: React.FC<LoginProps> = ({ theme }) => {
       case "SYSTEM_ADMIN":
         return "/system-admin-dashboard";
       case "ORGANIZATION_ADMIN":
-        return "/organization-dashboard";
+        return "/org-admin-dashboard";  // ✅ FIXED
       case "RETAILER":
         return "/retailer-dashboard";
       case "ACCOUNTANT":
@@ -52,11 +52,12 @@ const Login: React.FC<LoginProps> = ({ theme }) => {
       case "DEPARTMENT_MANAGER":
         return "/department-manager-dashboard";
       case "QUALITY_MARSHAL":
-        return "/quality-dashboard";
+        return "/quality-marshal-dashboard";  // ✅ FIXED (should match route)
       default:
-        return "/login"; // Default to login if role is unknown
+        return "/login"; // Default to login
     }
   };
+  
 
   // Login form submission
   const handleSubmit = async (e: React.FormEvent) => {
@@ -79,7 +80,12 @@ const Login: React.FC<LoginProps> = ({ theme }) => {
       saveAuthDetails(data.token, username, data.role);
       setNotification({ title: "Success", message: "Login successful!", type: "success" });
 
-      setTimeout(() => navigate(getDashboardRoute(data.role)), 1500);
+      setTimeout(() => {
+        if (window.location.pathname !== getDashboardRoute(data.role)) {
+          navigate(getDashboardRoute(data.role));
+        }
+      }, 1500);
+      
     } catch (error: any) {
       setNotification({ title: "Error", message: error.message, type: "error" });
     }
