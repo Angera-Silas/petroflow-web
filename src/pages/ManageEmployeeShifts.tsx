@@ -1,11 +1,10 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect } from 'react';
 import { getRequest, deleteRequest } from '../utils/api';
 import NotificationPopup from '../components/popups/NotificationPopup';
 import Button from '../components/buttons/Button';
 import CreateEmployeeShiftForm from '../forms/employee/CreateEmployeeShift';
 import ReusableTable from '../components/tables/ReusableTable';
-import Modal from '../components/modals/Modal'; // Assuming you have a Modal component
+import Modal from '../components/modals/Modal';
 import { useSelector } from 'react-redux';
 import { RootState } from '../store';
 import { format } from 'date-fns';
@@ -21,6 +20,12 @@ interface EmployeeShift {
     sellingPoints: string;
 }
 
+interface Column {
+    key: string;
+    label: string;
+    resizable?: boolean;
+}
+
 interface ManageEmployeeShiftsProps {
     theme: string;
 }
@@ -33,10 +38,23 @@ const ManageEmployeeShifts: React.FC<ManageEmployeeShiftsProps> = ({ theme }) =>
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [employeeShiftToDelete, setEmployeeShiftToDelete] = useState<EmployeeShift | null>(null);
+    const [visibleColumns, setVisibleColumns] = useState<Column[]>([]);
     const user = useSelector((state: RootState) => state.user);
 
     const organizationId = user.organizationId ? String(user.organizationId) : '';
     const facilityId = user.facilityId ? String(user.facilityId) : '';
+
+    const columns: Column[] = React.useMemo(() => [
+        { key: 'employeeName', label: 'Employee Name', resizable: true },
+        { key: 'shiftStart', label: 'Shift Start', resizable: true },
+        { key: 'shiftEnd', label: 'Shift End', resizable: true },
+        { key: 'shiftType', label: 'Shift Type', resizable: true },
+        { key: 'sellingPoints', label: 'Selling Points', resizable: true },
+    ], []);
+
+    useEffect(() => {
+        setVisibleColumns(columns); // Initialize all columns as visible
+    }, [columns]);
 
     useEffect(() => {
         if (facilityId) {
@@ -119,40 +137,40 @@ const ManageEmployeeShifts: React.FC<ManageEmployeeShiftsProps> = ({ theme }) =>
         }
     };
 
-    const formatDateTime = (dateTime: string) => {
-        const date = new Date(dateTime);
-        return format(date, 'yyyy-MM-dd HH:mm:ss');
+    const handleColumnVisibilityChange = (col: Column) => {
+        setVisibleColumns((prev) => {
+            if (prev.includes(col)) {
+                return prev.filter((c) => c.key !== col.key); // Remove column
+            } else {
+                const updatedColumns = [...prev];
+                const originalIndex = columns.findIndex((c) => c.key === col.key);
+                updatedColumns.splice(originalIndex, 0, col); // Restore column to its original position
+                return updatedColumns;
+            }
+        });
     };
 
-    const columns = [
-        { key: 'employeeName', label: 'Employee Name' },
-        { key: 'shiftStart', label: 'Shift Start', render: (row: EmployeeShift) => formatDateTime(row.shiftStart) },
-        { key: 'shiftEnd', label: 'Shift End', render: (row: EmployeeShift) => formatDateTime(row.shiftEnd) },
-        { key: 'shiftType', label: 'Shift Type' },
-        { key: 'sellingPoints', label: 'Selling Points' },
+    const actions = [
         {
-            key: 'actions',
-            label: 'Actions',
-            render: (row: EmployeeShift) => (
-                <>
-                    <Button onClick={() => handleEdit(row)}>Edit</Button>
-                    <Button onClick={() => { setEmployeeShiftToDelete(row); setIsDeleteModalOpen(true); }} disabled={loading}>
-                        {loading ? 'Deleting...' : 'Delete'}
-                    </Button>
-                </>
-            )
-        }
+            label: 'Edit',
+            onClick: (row: EmployeeShift) => handleEdit(row),
+        },
+        {
+            label: 'Delete',
+            onClick: (row: EmployeeShift) => {
+                setEmployeeShiftToDelete(row);
+                setIsDeleteModalOpen(true);
+            },
+        },
     ];
 
     return (
         <div className="p-6">
-            
-            <div className='flex justify-between items-center'>
-            <h1 className="text-3xl font-bold mb-6">Manage Employee Shifts</h1>
-                        <div className='mb-5' >
-                        <Button onClick={() => setIsModalOpen(true)}>Add New Employee Shift</Button>
-                        </div>
-                        </div>
+            <div className="flex justify-between items-center mb-6">
+                <h1 className="text-3xl font-bold">Manage Employee Shifts</h1>
+                <Button onClick={() => setIsModalOpen(true)}>Add New Employee Shift</Button>
+            </div>
+
             {notification && (
                 <NotificationPopup
                     title={notification.title}
@@ -162,17 +180,21 @@ const ManageEmployeeShifts: React.FC<ManageEmployeeShiftsProps> = ({ theme }) =>
                 />
             )}
 
-           
-
             <ReusableTable
                 columns={columns}
                 data={employeeShifts}
-                onRowSelect={() => {}}
+                onRowSelect={(selectedIds) => {
+                    const selectedId = selectedIds[0];
+                    const selected = employeeShifts.find((shift) => shift.id === Number(selectedId)) || null;
+                    setSelectedEmployeeShift(selected);
+                }}
                 theme={theme}
                 itemsPerPage={10}
-                visibleColumns={columns}
-                onColumnVisibilityChange={() => {}}
+                visibleColumns={visibleColumns}
+                onColumnVisibilityChange={handleColumnVisibilityChange}
                 rowKey="id"
+                selectionMode="single"
+                actions={actions} // Pass actions to the table
             />
 
             {isModalOpen && (
@@ -192,10 +214,13 @@ const ManageEmployeeShifts: React.FC<ManageEmployeeShiftsProps> = ({ theme }) =>
                     <div>
                         <h2>Confirm Deletion</h2>
                         <p>Are you sure you want to delete this employee shift?</p>
+                        <div className="flex justify-end gap-2 mt-4">
+                        <Button onClick={() => setIsDeleteModalOpen(false)}>Cancel</Button>
                         <Button onClick={handleDelete} disabled={loading}>
                             {loading ? 'Deleting...' : 'Confirm'}
                         </Button>
-                        <Button onClick={() => setIsDeleteModalOpen(false)}>Cancel</Button>
+                        
+                        </div>
                     </div>
                 </Modal>
             )}

@@ -14,11 +14,14 @@ ChartJS.register(
 );
 
 interface PieChartProps {
-  data: { label: string; value: number }[];
-  theme?: "light" | "dark";
+  data: { label: string; value: number}[];
+  theme?: string;
+  headerText?: string;
+  dataTitle?: string 
+
 }
 
-const PieChart: React.FC<PieChartProps> = ({ data, theme = "light" }) => {
+const PieChart: React.FC<PieChartProps> = ({ data, theme, headerText , dataTitle}) => {
   const colors = [
     'rgba(255, 99, 132, 0.3)',
     'rgba(54, 162, 235, 0.3)',
@@ -89,7 +92,7 @@ const PieChart: React.FC<PieChartProps> = ({ data, theme = "light" }) => {
     labels: data.map((d) => d.label),
     datasets: [
       {
-        label: "Data",
+        label: dataTitle ?? 'Dataset',
         data: data.map((d) => d.value),
         backgroundColor: colors,
         borderColor: borderColors,
@@ -109,14 +112,14 @@ const PieChart: React.FC<PieChartProps> = ({ data, theme = "light" }) => {
       },
       title: {
         display: true,
-        text: 'Pie Chart',
+        text: headerText ?? 'Pie Chart',
         color: theme === 'dark' ? 'white' : 'black',
       },
     },
   };
 
   return (
-    <div className={`p-4 rounded-lg shadow-md ${theme === "dark" ? "bg-gray-800 text-white" : "bg-white text-black"}`}>
+    <div className={`p-4 rounded-lg shadow-md ${theme === "dark" ? "bg-gray-800 text-white" : "bg-white text-black"} flex items-center justify-center`}>
       <Pie data={chartData} options={options} />
     </div>
   );

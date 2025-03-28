@@ -3,11 +3,11 @@ import { getRequest, deleteRequest } from '../utils/api';
 import ReusableTable from '../components/tables/ReusableTable';
 import Button from '../components/buttons/Button';
 import Modal from '../components/modals/Modal';
-import StartShiftReadingForm from '../forms/sales/StartShiftReadingForm';
 import EndShiftReadingForm from '../forms/sales/EndShiftReadingForm';
 import NotificationPopup from '../components/popups/NotificationPopup';
 import { useSelector } from 'react-redux';
 import { RootState } from '../store';
+import StartShiftReadingForm from '../forms/sales/StartShiftReadingForm';
 
 interface Reading {
     id: number;
@@ -20,13 +20,20 @@ interface Reading {
     status: string;
     sellPointId: number;
     shiftId: number;
+    createdBy: string;
+    updatedBy: string;
+    createdAt: string;
 }
 
 interface Column {
     key: string;
     label: string;
     resizable?: boolean;
-    render?: (row: Reading) => React.ReactNode;
+}
+
+interface Action<T> {
+    label: string;
+    onClick: (row: T) => void;
 }
 
 interface PumpManagementProps {
@@ -35,35 +42,24 @@ interface PumpManagementProps {
 
 const PumpManagement: React.FC<PumpManagementProps> = ({ theme }) => {
     const [readings, setReadings] = useState<Reading[]>([]);
-    const [selectedReading, setSelectedReading] = useState<Reading | null>(null);
-    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-    const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
-    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [selectedRow, setSelectedRow] = useState<string | null>(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [modalType, setModalType] = useState<string>('');
     const [notification, setNotification] = useState<{ title: string; message: string; type: 'success' | 'error' | 'info' | 'warning' } | null>(null);
     const [loading, setLoading] = useState(false);
     const [visibleColumns, setVisibleColumns] = useState<Column[]>([]);
     const user = useSelector((state: RootState) => state.user);
+    const [selectedReading, setSelectedReading] = useState<Reading | null>(null);
+    const [readingToDelete, setReadingToDelete] = useState<Reading | null>(null);
 
     const orgId = user.organizationId ? Number(user.organizationId) : 0;
     const facilityId = user.facilityId ? Number(user.facilityId) : 0;
-    const name = user.name || '';
-
-    const columns: Column[] = React.useMemo(() => [
-        { key: 'readingDate', label: 'Reading Date', resizable: true },
-        { key: 'shiftType', label: 'Shift', resizable: true },
-        { key: 'sellPointName', label: 'Sell Point', resizable: true },
-        { key: 'startReading', label: 'Start Reading', resizable: true },
-        { key: 'endReading', label: 'End Reading', resizable: true },
-        { key: 'totalVolume', label: 'Total Volume', resizable: true },
-        { key: 'status', label: 'Status', resizable: true }
-    ], []);
 
     useEffect(() => {
-        // Fetch meter readings
         const fetchReadings = async () => {
             try {
                 const response = await getRequest(`/pump-meter-readings/get/meter-reading/facility/${facilityId}`);
-                setReadings(response); // Directly set the response as readings
+                setReadings(response);
             } catch (error) {
                 console.error('Error fetching meter readings:', error);
             }
@@ -72,57 +68,96 @@ const PumpManagement: React.FC<PumpManagementProps> = ({ theme }) => {
         fetchReadings();
     }, [facilityId]);
 
-    useEffect(() => {
-        // Set all columns as visible by default
-        setVisibleColumns(columns);
-    }, [columns]);
-
-    const handleAddClick = () => {
-        setIsAddModalOpen(true);
+    const handleRecordReading = () => {
+        setModalType('record');
+        setIsModalOpen(true);
     };
 
-    const handleUpdateClick = () => {
-        setIsUpdateModalOpen(true);
-    };
-
-    const handleDeleteClick = () => {
-        setIsDeleteModalOpen(true);
-    };
-
-    const handleDeleteConfirm = async () => {
-        if (!selectedReading) return;
-
+    const handleDelete = async () => {
+        if (!readingToDelete) return;
         setLoading(true);
         setNotification(null);
 
         try {
-            await deleteRequest(`/pump-meter-readings/delete/${selectedReading.id}`);
+            await deleteRequest(`/pump-meter-readings/delete/${readingToDelete.id}`);
+            setReadings(readings.filter((reading) => reading.id !== readingToDelete.id));
             setNotification({
                 title: 'Success',
                 message: 'Reading deleted successfully!',
-                type: 'success'
+                type: 'success',
             });
-            setReadings(readings.filter((reading) => reading.id !== selectedReading.id));
-            setIsDeleteModalOpen(false);
-            setSelectedReading(null);
+            setIsModalOpen(false);
         } catch (error) {
             setNotification({
                 title: 'Error',
-                message: (error as Error).message || 'Failed to delete reading',
-                type: 'error'
+                message: 'Failed to delete reading',
+                type: 'error',
             });
         } finally {
             setLoading(false);
         }
     };
 
+    const handleEdit = (reading: Reading) => {
+        setSelectedReading(reading);
+        setModalType('edit');
+        setIsModalOpen(true);
+    };
+
+    const handleFormSubmit = () => {
+        setSelectedReading(null);
+        setIsModalOpen(false);
+        const fetchReadings = async () => {
+            try {
+                const response = await getRequest(`/pump-meter-readings/get/meter-reading/facility/${facilityId}`);
+                setReadings(response);
+            } catch (error) {
+                console.error('Error fetching readings:', error);
+            }
+        };
+
+        fetchReadings();
+    };
+
+    const actions: Action<Reading>[] = [
+        {
+            label: 'Edit',
+            onClick: (row: Reading) => {
+                handleEdit(row);
+            },
+        },
+        {
+            label: 'Delete',
+            onClick: (row: Reading) => {
+                setReadingToDelete(row);
+                setModalType('delete');
+                setIsModalOpen(true);
+            },
+        },
+    ];
+
+    const columns: Column[] = React.useMemo(
+        () => [
+            { key: 'readingDate', label: 'Reading Date', resizable: true },
+            { key: 'shiftType', label: 'Shift', resizable: true },
+            { key: 'sellPointName', label: 'Sell Point', resizable: true },
+            { key: 'startReading', label: 'Start Reading', resizable: true },
+            { key: 'endReading', label: 'End Reading', resizable: true },
+            { key: 'totalVolume', label: 'Total Volume', resizable: true },
+            { key: 'status', label: 'Status', resizable: true },
+        ],
+        []
+    );
+
+    useEffect(() => {
+        setVisibleColumns(columns);
+    }, [columns]);
+
     const handleColumnVisibilityChange = (col: Column) => {
         setVisibleColumns((prev) => {
             if (prev.includes(col)) {
-                // Remove column
                 return prev.filter((c) => c.key !== col.key);
             } else {
-                // Add column back in its original position
                 const updatedColumns = [...prev];
                 const originalIndex = columns.findIndex((c) => c.key === col.key);
                 updatedColumns.splice(originalIndex, 0, col);
@@ -135,14 +170,8 @@ const PumpManagement: React.FC<PumpManagementProps> = ({ theme }) => {
         <div className="max-w-7xl mx-auto p-6">
             <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-semibold mb-4">Pump Management</h2>
-                <div className="flex space-x-4 mt-4">
-                    <Button onClick={handleAddClick}>Add</Button>
-                    {selectedReading && (
-                        <>
-                            <Button onClick={handleUpdateClick}>Update</Button>
-                            <Button onClick={handleDeleteClick}>Delete</Button>
-                        </>
-                    )}
+                <div className="flex gap-4">
+                    <Button onClick={handleRecordReading}>Record Reading</Button>
                 </div>
             </div>
 
@@ -158,55 +187,48 @@ const PumpManagement: React.FC<PumpManagementProps> = ({ theme }) => {
             <ReusableTable
                 columns={columns}
                 data={readings}
-                onRowSelect={(selectedIds: string[]) => {
-                    console.log('Selected IDs:', selectedIds); // Debugging: Log selected IDs
-                    const selected = readings.find((reading) => reading.id.toString() === selectedIds[0]);
-                    console.log('Selected Reading:', selected); // Debugging: Log selected reading
-                    setSelectedReading(selected || null);
-                }}
+                onRowSelect={(selectedIds) => setSelectedRow(selectedIds[0] || null)}
                 theme={theme}
                 itemsPerPage={10}
                 visibleColumns={visibleColumns}
                 onColumnVisibilityChange={handleColumnVisibilityChange}
-                rowKey="id" // Ensure this matches the `id` field in the data
+                rowKey="id"
+                selectionMode="single"
+                actions={actions}
             />
 
-            {isAddModalOpen && (
-                <Modal onClose={() => setIsAddModalOpen(false)} open={isAddModalOpen} theme={theme}>
-                    <StartShiftReadingForm
-                        theme={theme}
-                        organizationId={orgId}
-                        facilityId={facilityId}
-                        userName={name}
-                    />
-                </Modal>
-            )}
-
-            {isUpdateModalOpen && selectedReading && (
-                <Modal onClose={() => setIsUpdateModalOpen(false)} open={isUpdateModalOpen} theme={theme}>
-                    <EndShiftReadingForm
-                        theme={theme}
-                        organizationId={orgId}
-                        facilityId={facilityId}
-                        sellPointId={selectedReading.sellPointId}
-                        shiftId={selectedReading.shiftId}
-                        userName={name}
-                    />
-                </Modal>
-            )}
-
-            {isDeleteModalOpen && (
-                <Modal onClose={() => setIsDeleteModalOpen(false)} open={isDeleteModalOpen} theme={theme}>
-                    <div className="p-6">
-                        <h2 className="text-xl font-semibold mb-4">Confirm Delete</h2>
-                        <p>Are you sure you want to delete this reading?</p>
-                        <div className="flex space-x-4 mt-4">
-                            <Button onClick={handleDeleteConfirm} disabled={loading}>
-                                {loading ? 'Deleting...' : 'Confirm'}
-                            </Button>
-                            <Button onClick={() => setIsDeleteModalOpen(false)}>Cancel</Button>
-                        </div>
-                    </div>
+            {isModalOpen && (
+                <Modal onClose={() => setIsModalOpen(false)} open={isModalOpen} theme={theme}>
+                    {modalType === 'delete' ? (
+                        <>
+                            <h2 className="text-xl font-bold mb-2">Confirm Deletion</h2>
+                            <p>Are you sure you want to delete the selected reading?</p>
+                            <div className="flex justify-end gap-2 mt-4">
+                                <Button onClick={() => setIsModalOpen(false)}>Cancel</Button>
+                                <Button onClick={handleDelete} disabled={loading}>
+                                    {loading ? 'Deleting...' : 'Confirm'}
+                                </Button>
+                            </div>
+                        </>
+                    ) : modalType === 'record' ? (
+                        <StartShiftReadingForm
+                            theme={theme}
+                            organizationId={orgId}
+                            facilityId={facilityId}
+                            userName={user.name || 'Unknown User'}
+                        />
+                    ) : (
+                        <EndShiftReadingForm
+                            theme={theme}
+                            selectedReading={{
+                                ...selectedReading!,
+                                startReading: selectedReading!.startReading.toString(),
+                                endReading: selectedReading!.endReading.toString(),
+                                totalVolume: selectedReading!.totalVolume.toString(),
+                            }}
+                            userName={user.name || 'Unknown User'}
+                        />
+                    )}
                 </Modal>
             )}
         </div>

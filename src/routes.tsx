@@ -28,6 +28,12 @@ import SellPoints from "./pages/SellPoints";
 import ManageEmployeeShifts from "./pages/ManageEmployeeShifts";
 import ManageInventory from "./pages/ManageInventory";
 import PumpManagement from "./pages/PumpManagement";
+import SalesManagement from "./pages/SalesManagement";
+import ProductView from "./pages/ProductView";
+import OrganizationView from "./pages/OrganizationView";
+import EmployeeView from "./pages/EmployeeView";
+import StockItemView from "./pages/StockItemView";
+import FacilityView from "./pages/FacilityView";
 
 const RoutesComponent = () => {
   const [theme, setTheme] = useState(() => {
@@ -76,9 +82,13 @@ const RoutesComponent = () => {
           <Route path="sales/sell-points" element={<SellPoints theme={theme} />} />
           <Route path="inventory/manage" element={<ManageInventory theme={theme} />} />
           <Route path="sales/meter-reading" element={<PumpManagement theme={theme} />} />
-          
-          
-         
+          <Route path="sales/manage" element={<SalesManagement theme={theme} />} />
+          <Route path="/employee/view" element={<EmployeeView theme={theme} />} />
+          <Route path="/product/view" element={<ProductView theme={theme} />} />
+          <Route path="/company/view" element={<OrganizationView theme={theme} />} />
+          <Route path="/inventory/view" element={<StockItemView theme={theme} />} />
+          <Route path="/facility/view" element={<FacilityView theme={theme} />} />
+          <Route path="/retailer-dashboard" element={<RetailerDashboard theme={theme} />} />
   
         </Route>
       </Routes>

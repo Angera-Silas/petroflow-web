@@ -9,7 +9,6 @@ import TextInputField from "../../components/inputs/TextInputField";
 import SelectInputField from "../../components/inputs/SelectInputField";
 import { getRequest, postRequest, putRequest } from "../../utils/api";
 import Button from "../../components/buttons/Button";
-import { s } from "framer-motion/dist/types.d-O7VGXDJe";
 
 interface EmployeeFormProps {
   theme: string;

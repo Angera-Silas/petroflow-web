@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useState, useEffect } from 'react';
 import { getRequest, deleteRequest, putRequest } from '../utils/api';
 import NotificationPopup from '../components/popups/NotificationPopup';
@@ -28,6 +27,12 @@ interface Stock {
     sellingPricePerUnit: number;
 }
 
+interface Column {
+    key: string;
+    label: string;
+    resizable?: boolean;
+}
+
 interface ManageInventoryProps {
     theme: string;
 }
@@ -39,10 +44,29 @@ const ManageInventory: React.FC<ManageInventoryProps> = ({ theme }) => {
     const [loading, setLoading] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [visibleColumns, setVisibleColumns] = useState<Column[]>([]);
+
     const user = useSelector((state: RootState) => state.user);
 
     const orgId = user.organizationId ? String(user.organizationId) : '';
     const facilityId = user.facilityId ? String(user.facilityId) : '';
+
+    const columns: Column[] = React.useMemo(() => [
+        { key: 'dateStocked', label: 'Date Stocked', resizable: true },
+        { key: 'productName', label: 'Product Name', resizable: true },
+        { key: 'unitsAvailable', label: 'Units Available', resizable: true },
+        { key: 'unitsSold', label: 'Units Sold', resizable: true },
+        { key: 'unitsBought', label: 'Units Bought', resizable: true },
+        { key: 'unitsReturned', label: 'Units Returned', resizable: true },
+        { key: 'unitsDamaged', label: 'Units Damaged', resizable: true },
+        { key: 'unitsLost', label: 'Units Lost', resizable: true },
+        { key: 'buyingPricePerUnit', label: 'Buying Price Per Unit', resizable: true },
+        { key: 'sellingPricePerUnit', label: 'Selling Price Per Unit', resizable: true },
+    ], []);
+
+    useEffect(() => {
+        setVisibleColumns(columns); // Initialize all columns as visible
+    }, [columns]);
 
     useEffect(() => {
         if (facilityId) {
@@ -115,34 +139,31 @@ const ManageInventory: React.FC<ManageInventoryProps> = ({ theme }) => {
         }
     };
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = e.target;
-        setSelectedStock(prev => prev ? { ...prev, [name]: value } : null);
+    const handleColumnVisibilityChange = (col: Column) => {
+        setVisibleColumns((prev) => {
+            if (prev.includes(col)) {
+                return prev.filter((c) => c.key !== col.key); // Remove column
+            } else {
+                const updatedColumns = [...prev];
+                const originalIndex = columns.findIndex((c) => c.key === col.key);
+                updatedColumns.splice(originalIndex, 0, col); // Restore column to its original position
+                return updatedColumns;
+            }
+        });
     };
 
-    const columns = [
-        { key: 'dateStocked', label: 'Date Stocked' },
-        { key: 'productName', label: 'Product Name' },
-        { key: 'unitsAvailable', label: 'Units Available' },
-        { key: 'unitsSold', label: 'Units Sold' },
-        { key: 'unitsBought', label: 'Units Bought' },
-        { key: 'unitsReturned', label: 'Units Returned' },
-        { key: 'unitsDamaged', label: 'Units Damaged' },
-        { key: 'unitsLost', label: 'Units Lost' },
-        { key: 'buyingPricePerUnit', label: 'Buying Price Per Unit' },
-        { key: 'sellingPricePerUnit', label: 'Selling Price Per Unit' },
+    const actions = [
         {
-            key: 'actions',
-            label: 'Actions',
-            render: (row: Stock) => (
-                <>
-                    <Button onClick={() => handleEdit(row)}>Edit</Button>
-                    <Button onClick={() => { setSelectedStock(row); setIsDeleteModalOpen(true); }} disabled={loading}>
-                        {loading ? 'Deleting...' : 'Delete'}
-                    </Button>
-                </>
-            )
-        }
+            label: 'Edit',
+            onClick: (row: Stock) => handleEdit(row),
+        },
+        {
+            label: 'Delete',
+            onClick: (row: Stock) => {
+                setSelectedStock(row);
+                setIsDeleteModalOpen(true);
+            },
+        },
     ];
 
     return (
@@ -161,84 +182,85 @@ const ManageInventory: React.FC<ManageInventoryProps> = ({ theme }) => {
             <ReusableTable
                 columns={columns}
                 data={stockItems}
-                onRowSelect={() => {}}
+                onRowSelect={(selectedIds) => {
+                    const selectedId = selectedIds[0];
+                    const selected = stockItems.find((item) => item.id === Number(selectedId)) || null;
+                    setSelectedStock(selected);
+                }}
                 theme={theme}
                 itemsPerPage={10}
-                visibleColumns={columns}
-                onColumnVisibilityChange={() => {}}
+                visibleColumns={visibleColumns}
+                onColumnVisibilityChange={handleColumnVisibilityChange}
                 rowKey="id"
+                selectionMode="single" // Enable single selection mode
+                actions={actions} // Pass actions to the table
             />
 
             {isModalOpen && (
                 <Modal onClose={() => setIsModalOpen(false)} open={isModalOpen} theme={theme}>
-                    <form onSubmit={handleFormSubmit} className="grid grid-cols-2 gap-4">
-                        <TextInputField
-                            label="Units Available"
-                            name="unitsAvailable"
-                            value={selectedStock?.unitsAvailable ? String(selectedStock.unitsAvailable) : ''}
-                            onChange={handleChange}
-                            type="number"
-                            theme={theme}
-                        />
-                        <TextInputField
-                            label="Units Sold"
-                            name="unitsSold"
-                            value={selectedStock?.unitsSold ? String(selectedStock.unitsSold) : ''}
-                            onChange={handleChange}
-                            type="number"
-                            theme={theme}
-                        />
-                        <TextInputField
-                            label="Units Bought"
-                            name="unitsBought"
-                            value={selectedStock?.unitsBought ? String(selectedStock.unitsBought) : ''}
-                            onChange={handleChange}
-                            type="number"
-                            theme={theme}
-                        />
-                        <TextInputField
-                            label="Units Returned"
-                            name="unitsReturned"
-                            value={selectedStock?.unitsReturned ? String(selectedStock.unitsReturned) : ''}
-                            onChange={handleChange}
-                            type="number"
-                            theme={theme}
-                        />
-                        <TextInputField
-                            label="Units Damaged"
-                            name="unitsDamaged"
-                            value={selectedStock?.unitsDamaged ? String(selectedStock.unitsDamaged) : ''}
-                            onChange={handleChange}
-                            type="number"
-                            theme={theme}
-                        />
-                        <TextInputField
-                            label="Units Lost"
-                            name="unitsLost"
-                            value={selectedStock?.unitsLost ? String(selectedStock.unitsLost) : ''}
-                            onChange={handleChange}
-                            type="number"
-                            theme={theme}
-                        />
-                        <TextInputField
-                            label="Buying Price Per Unit"
-                            name="buyingPricePerUnit"
-                            value={selectedStock?.buyingPricePerUnit ? String(selectedStock.buyingPricePerUnit) : ''}
-                            onChange={handleChange}
-                            type="number"
-                            theme={theme}
-                        />
-                        <TextInputField
-                            label="Selling Price Per Unit"
-                            name="sellingPricePerUnit"
-                            value={selectedStock?.sellingPricePerUnit ? String(selectedStock.sellingPricePerUnit) : ''}
-                            onChange={handleChange}
-                            type="number"
-                            theme={theme}
-                        />
-                        <Button type="submit" disabled={loading}>
-                            {loading ? 'Submitting...' : 'Update Stock'}
-                        </Button>
+                    <form onSubmit={handleFormSubmit} className="p-4">
+                        <h2 className="text-xl font-bold mb-4">Edit Stock</h2>
+                        <div className="grid grid-cols-3 gap-4">
+                            <TextInputField
+                                label="Units Available"
+                                name="unitsAvailable"
+                                value={selectedStock?.unitsAvailable ? String(selectedStock.unitsAvailable) : ''}
+                                onChange={(e) => setSelectedStock(prev => prev ? { ...prev, [e.target.name]: e.target.value } : null)}
+                                type="number"
+                                theme={theme}
+                            />
+
+                            <TextInputField
+                                label="Units Sold"
+                                name="unitsSold"
+                                value={selectedStock?.unitsSold ? String(selectedStock.unitsSold) : ''}
+                                onChange={(e) => setSelectedStock(prev => prev ? { ...prev, [e.target.name]: e.target.value } : null)}
+                                type="number"
+                                theme={theme}
+                            />
+
+                            <TextInputField
+                                label="Units Bought"
+                                name="unitsBought"
+                                value={selectedStock?.unitsBought ? String(selectedStock.unitsBought) : ''}
+                                onChange={(e) => setSelectedStock(prev => prev ? { ...prev, [e.target.name]: e.target.value } : null)}
+                                type="number"
+                                theme={theme}
+                            />
+
+                            <TextInputField
+                                label="Units Returned"
+                                name="unitsReturned"
+                                value={selectedStock?.unitsReturned ? String(selectedStock.unitsReturned) : ''}
+                                onChange={(e) => setSelectedStock(prev => prev ? { ...prev, [e.target.name]: e.target.value } : null)}
+                                type="number"
+                                theme={theme}
+                            />
+
+                            <TextInputField
+                                label="Units Damaged"
+                                name="unitsDamaged"
+                                value={selectedStock?.unitsDamaged ? String(selectedStock.unitsDamaged) : ''}
+                                onChange={(e) => setSelectedStock(prev => prev ? { ...prev, [e.target.name]: e.target.value } : null)}
+                                type="number"
+                                theme={theme}
+                            />
+
+                            <TextInputField
+                                label="Units Lost"
+                                name="unitsLost"
+                                value={selectedStock?.unitsLost ? String(selectedStock.unitsLost) : ''}
+                                onChange={(e) => setSelectedStock(prev => prev ? { ...prev, [e.target.name]: e.target.value } : null)}
+                                type="number"
+                                theme={theme}
+                            />
+                        </div>
+
+                        <div className="flex justify-end">
+                            <Button type="submit" disabled={loading}>
+                                {loading ? 'Submitting...' : 'Update Stock'}
+                            </Button>
+                        </div>
                     </form>
                 </Modal>
             )}
@@ -248,10 +270,12 @@ const ManageInventory: React.FC<ManageInventoryProps> = ({ theme }) => {
                     <div>
                         <h2>Confirm Deletion</h2>
                         <p>Are you sure you want to delete this stock item?</p>
-                        <Button onClick={handleDelete} disabled={loading}>
-                            {loading ? 'Deleting...' : 'Confirm'}
-                        </Button>
-                        <Button onClick={() => setIsDeleteModalOpen(false)}>Cancel</Button>
+                        <div className="flex justify-end gap-2 mt-4">
+                            <Button onClick={() => setIsDeleteModalOpen(false)}>Cancel</Button>
+                            <Button onClick={handleDelete} disabled={loading}>
+                                {loading ? 'Deleting...' : 'Confirm'}
+                            </Button>
+                        </div>
                     </div>
                 </Modal>
             )}

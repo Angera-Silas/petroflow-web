@@ -13,6 +13,11 @@ interface StartShiftReadingFormProps {
     userName: string; // Name of the person sending the request
 }
 
+const formatDate = (date: Date): string => {
+    const pad = (num: number) => num.toString().padStart(2, '0');
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+};
+
 const StartShiftReadingForm: React.FC<StartShiftReadingFormProps> = ({ theme, organizationId, facilityId, userName }) => {
     const [formData, setFormData] = useState({
         organizationId: organizationId,
@@ -21,15 +26,18 @@ const StartShiftReadingForm: React.FC<StartShiftReadingFormProps> = ({ theme, or
         shiftId: '',
         startReading: '',
         readingDate: new Date().toISOString(),
-        createdAt: new Date().toISOString(),
+        createdAt: formatDate(new Date()).toString(),
         createdBy: userName,
         status: 'ACTIVE'
     });
+
 
     const [notification, setNotification] = useState<{ title: string; message: string; type: 'success' | 'error' | 'info' | 'warning' } | null>(null);
     const [loading, setLoading] = useState(false);
     const [shifts, setShifts] = useState<any[]>([]); // Ensure shifts is an array
     const [sellPoints, setSellPoints] = useState<any[]>([]); // Ensure sellPoints is an array
+
+    const [readings, setReadings] = useState<any[]>([]); // Store fetched readings
 
     useEffect(() => {
         // Fetch active shifts
@@ -56,6 +64,19 @@ const StartShiftReadingForm: React.FC<StartShiftReadingFormProps> = ({ theme, or
         fetchSellPoints();
     }, [facilityId]);
 
+    useEffect(() => {
+        const fetchReadings = async () => {
+            try {
+                const response = await getRequest(`/pump-meter-readings/get/meter-reading/facility/${facilityId}`);
+                setReadings(response);
+            } catch (error) {
+                console.error('Error fetching meter readings:', error);
+            }
+        };
+    
+        fetchReadings();
+    }, [facilityId]);
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
@@ -65,15 +86,52 @@ const StartShiftReadingForm: React.FC<StartShiftReadingFormProps> = ({ theme, or
         e.preventDefault();
         setLoading(true);
         setNotification(null);
-
+    
+        // Validate required fields
+        if (!formData.shiftId || !formData.sellPointId || !formData.startReading) {
+            setNotification({
+                title: 'Error',
+                message: 'Please fill in all required fields.',
+                type: 'error'
+            });
+            setLoading(false);
+            return;
+        }
+    
+        // Check for duplicate readings
+        const isDuplicate = readings.some(
+            (reading) =>
+                reading.readingDate === formData.readingDate &&
+                reading.shiftId === formData.shiftId &&
+                reading.sellPointId === formData.sellPointId
+        );
+    
+        if (isDuplicate) {
+            setNotification({
+                title: 'Error',
+                message: 'A reading with the same date, shift, and sell point already exists.',
+                type: 'error'
+            });
+            setLoading(false);
+            return;
+        }
+    
         try {
-            // Handle form submission logic here
+            // Submit the form
             await postRequest('/pump-meter-readings/add', formData);
-
+    
             setNotification({
                 title: 'Success',
                 message: 'Start reading recorded successfully!',
                 type: 'success'
+            });
+    
+            // Reset form after successful submission
+            setFormData({
+                ...formData,
+                sellPointId: '',
+                shiftId: '',
+                startReading: '',
             });
         } catch (error) {
             setNotification({
@@ -85,7 +143,6 @@ const StartShiftReadingForm: React.FC<StartShiftReadingFormProps> = ({ theme, or
             setLoading(false);
         }
     };
-
     const formBgStyle = theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-white text-black';
 
     return (

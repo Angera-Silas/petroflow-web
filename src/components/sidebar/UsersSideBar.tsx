@@ -26,7 +26,7 @@ const menuItems = [
     subItems: [
       { name: "Add New Company", path: "/companies/add", roles: ["SYSTEM_ADMIN"] },
       { name: "Manage Companies", path: "/companies/manage", roles: ["SYSTEM_ADMIN"] },
-      { name: "View Company", path: "/companies/view", roles: ["SYSTEM_ADMIN"] },
+      { name: "View Company", path: "/company/view", roles: ["SYSTEM_ADMIN"] },
     ],
   },
 
@@ -44,7 +44,7 @@ const menuItems = [
 
   {
     name: "Facilities/Stations", icon: <FaGasPump />,
-    roles: ["SYSTEM_ADMIN", "ORGANIZATION_ADMIN"],
+    roles: ["SYSTEM_ADMIN", "ORGANIZATION_ADMIN", "RETAILER"],
     subItems: [
       {
         name: "New Facility", path: "/facilities/add",
@@ -55,9 +55,10 @@ const menuItems = [
         roles: ["SYSTEM_ADMIN", "ORGANIZATION_ADMIN"]
       },
       {
-        name: "View Facility", path: "/facilities/view",
+        name: "View Facility", path: "/facility/view",
         roles: ["SYSTEM_ADMIN", "ORGANIZATION_ADMIN"]
       },
+      {name: "Facility Performance", path: "/facilities/performance", roles: ["RETAILER"]},
     ],
   },
 
@@ -67,9 +68,10 @@ const menuItems = [
     subItems: [
       { name: "Add Employee", path: "/employees/add", roles: ["STATION_MANAGER", "ORGANIZATION_ADMIN", "SYSTEM_ADMIN"] },
       { name: "Manage Employees", path: "/employees/manage", roles: ["STATION_MANAGER", "ORGANIZATION_ADMIN", "SYSTEM_ADMIN"] },
-      { name: "View Employee", path: "/employees/view", roles: ["STATION_MANAGER", "ORGANIZATION_ADMIN", "SYSTEM_ADMIN", "DEPARTMENT_MANAGER"] },
+      { name: "View Employee", path: "/employee/view", roles: ["STATION_MANAGER", "ORGANIZATION_ADMIN", "SYSTEM_ADMIN", "DEPARTMENT_MANAGER"] },
       { name: "Performance Summary", path: "/employees/performance-summary", roles: ["ALL"] },
       { name: "Employee Shifts", path: "/employees/shifts", roles: ["STATION_MANAGER", "DEPARTMENT_MANAGER", "SYSTEM_ADMIN"] },
+      {name: "Employee Performance", path: "/employees/performance", roles: ["RETAILER"]},
     ],
   },
   {
@@ -77,29 +79,29 @@ const menuItems = [
     roles: ["STATION_MANAGER", "RETAILER", "ACCOUNTANT", "DEPARTMENT_MANAGER"],
     subItems: [
       {
-        name: "Sell Points", path: "/sales/sell-points",
-        roles: ["STATION_MANAGER", "RETAILER", "ACCOUNTANT", "DEPARTMENT_MANAGER"]
+        name: "Manage Sell Points", path: "/sales/sell-points",
+        roles: ["STATION_MANAGER", "ACCOUNTANT", "DEPARTMENT_MANAGER"]
       },
       {
-        name: "Manage Metre Reading", path: "/sales/meter-reading",
-        roles: ["STATION_MANAGER", "RETAILER", "ACCOUNTANT", "DEPARTMENT_MANAGER"]
+        name: "Manage Metre Readings", path: "/sales/meter-reading",
+        roles: ["STATION_MANAGER", "ACCOUNTANT", "DEPARTMENT_MANAGER"]
       },
-      { name: "Approve Sales", path: "/sales/approve", roles: ["STATION_MANAGER", "DEPARTMENT_MANAGER"] },
+      { name: "Manage Sales", path: "/sales/manage", roles: ["STATION_MANAGER", "DEPARTMENT_MANAGER"] },
       { name: "Track Defaulters", path: "/sales/defaulters", roles: ["ACCOUNTANT"] },
-      { name: "Sales Summary", path: "/sales/summary", roles: ["ACCOUNTANT", "DEPARTMENT_MANAGER", "STATION_MANAGER"] },
-      {
-        name: "Process Refund", path: "/sales/refund",
-        roles: ["STATION_MANAGER", "RETAILER", "ACCOUNTANT", "DEPARTMENT_MANAGER"]
-      },
-      {
-        name: "Payments History", path: "/sales/payments-history",
-        roles: ["STATION_MANAGER", "RETAILER", "ACCOUNTANT", "DEPARTMENT_MANAGER"]
-      },
+      { name: "Sales Summary", path: "/sales/summary", roles: ["ACCOUNTANT", "DEPARTMENT_MANAGER", "STATION_MANAGER", "RETAILER"] },
+      // {
+      //   name: "Process Refund", path: "/sales/refund",
+      //   roles: ["STATION_MANAGER", "RETAILER", "ACCOUNTANT", "DEPARTMENT_MANAGER"]
+      // },
+      // {
+      //   name: "Payments History", path: "/sales/payments-history",
+      //   roles: ["STATION_MANAGER", "RETAILER", "ACCOUNTANT", "DEPARTMENT_MANAGER"]
+      // },
     ],
   },
   {
     name: "Incidents", icon: <FaExclamationTriangle />,
-    roles: ["STATION_MANAGER", "DEPARTMENT_MANAGER", "QUALITY_MARSHAL", "SYSTEM_ADMIN"],
+    roles: ["STATION_MANAGER", "DEPARTMENT_MANAGER", "QUALITY_MARSHAL", "SYSTEM_ADMIN", "RETAILER"],
     subItems: [
       {
         name: "Report Incident", path: "/incidents/report",
@@ -113,7 +115,9 @@ const menuItems = [
         name: "View Submitted", path: "/incidents/submitted",
         roles: ["STATION_MANAGER", "DEPARTMENT_MANAGER", "QUALITY_MARSHAL", "SYSTEM_ADMIN"]
       },
-      { name: "Resolve Incident", path: "/incidents/resolve", roles: ["QUALITY_MARSHAL", "SYSTEM_ADMIN", "STATION_MANAGER"] },
+      { name: "Resolve Incident", path: "/incidents/resolve", 
+        roles: ["QUALITY_MARSHAL", "SYSTEM_ADMIN", "STATION_MANAGER"] },
+        {name: "Resolve Incidents", path: "/incidents/resolve", roles: ["RETAILER"]},
     ],
   },
   {
@@ -134,6 +138,7 @@ const menuItems = [
       },
       { name: "Request Status", path: "/requests/status", roles: ["ALL"] },
       { name: "View Submitted", path: "/requests/submitted", roles: ["ALL"] },
+      {name: "Requests", path: "/requests/review", roles: ["RETAILER"]},
     ],
   },
   {
@@ -142,13 +147,14 @@ const menuItems = [
     subItems: [
       { name: "Manage Products", path: "/products/manage", roles: ["QUALITY_MARSHAL", "SYSTEM_ADMIN", "STATION_MANAGER"] },
       {
-        name: "View Product", path: "/products/view",
+        name: "View Product", path: "/product/view",
         roles: ["SYSTEM_ADMIN", "DEPARTMENT_MANAGER", "QUALITY_MARSHAL", "STATION_MANAGER"]
       },
       {
         name: "Product Status", path: "/products/status",
         roles: ["SYSTEM_ADMIN", "DEPARTMENT_MANAGER", "QUALITY_MARSHAL", "STATION_MANAGER"]
       },
+      {name: "Products Performance", path: "/products/performance", roles: ["RETAILER"]},
     ],
   },
   {
@@ -179,10 +185,6 @@ const menuItems = [
       { name: "Request Report", path: "/reports/requests" },
       { name: "Inventory Report", path: "/reports/inventory" },
       { name: "Employee Performance", path: "/reports/employees" },
-      {
-        name: "Facility Performance", path: "/reports/facilities",
-        roles: ["RETAILER", "ORGANIZATION_ADMIN", "STATION_MANAGER", "SYSTEM_ADMIN"]
-      },
       {
         name: "Organization Performance", path: "/reports/organizations",
         roles: ["RETAILER", "ORGANIZATION_ADMIN", "SYSTEM_ADMIN"]

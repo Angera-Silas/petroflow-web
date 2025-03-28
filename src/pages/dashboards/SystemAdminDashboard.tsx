@@ -256,7 +256,7 @@ const AdminDashboard = ({ theme }: AdminDashboardProps) => {
       <Table title="Organizations" columns={["Name","Type", "Location", "Email", "Phone", "Facilities", "Employees"]} data={organizationData} theme={theme} />
 
       {/* Facilities Table */}
-      <Table title="Stations / Facilities" columns={["Name", "Name", "Location", "Email", "Phone", "Employees", "Products/Services"]} data={facilitiesData} theme={theme} itemsPerPage={15} />
+      <Table title="Stations / Facilities" columns={["Name",  "Location", "Email", "Phone", "Employees", "Products/Services"]} data={facilitiesData} theme={theme} itemsPerPage={15} />
     </div>
   );
 };

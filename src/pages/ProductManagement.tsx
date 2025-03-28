@@ -4,7 +4,7 @@ import NotificationPopup from '../components/popups/NotificationPopup';
 import Button from '../components/buttons/Button';
 import CreateProductForm from '../forms/sales/CreateProduct';
 import ReusableTable from '../components/tables/ReusableTable';
-import Modal from '../components/modals/Modal'; // Assuming you have a Modal component
+import Modal from '../components/modals/Modal';
 import { useSelector } from 'react-redux';
 import { RootState } from '../store';
 
@@ -23,10 +23,16 @@ interface Product {
     facilityId: number;
     department: string;
 }
+interface Action<T> {
+    label: string;
+    onClick: (row: T) => void;
+}
+
 
 const ProductManagement: React.FC<ProductManagementProps> = ({ theme }) => {
     const [products, setProducts] = useState<Product[]>([]);
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+    const [selectedRow, setSelectedRow] = useState<string | null>(null); // Track the selected row for single selection
     const [notification, setNotification] = useState<{ title: string; message: string; type: 'success' | 'error' | 'info' | 'warning' } | null>(null);
     const [loading, setLoading] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -95,36 +101,41 @@ const ProductManagement: React.FC<ProductManagementProps> = ({ theme }) => {
         fetchProducts();
     };
 
+    const actions: Action<Product>[] = [
+    {
+        label: 'Edit',
+        onClick: (row: Product) => {
+            console.log('Edit action triggered for row:', row);
+            handleEdit(row);
+        },
+    },
+    {
+        label: 'Delete',
+        onClick: (row: Product) => {
+            console.log('Delete action triggered for row:', row);
+            setProductToDelete(row);
+            setIsDeleteModalOpen(true);
+        },
+    },
+];
+
     const columns = [
         { key: 'productName', label: 'Product Name' },
         { key: 'productDescription', label: 'Description' },
         { key: 'productCategory', label: 'Category' },
         { key: 'productSubCategory', label: 'SubCategory' },
         { key: 'department', label: 'Department' },
-        {
-            key: 'actions',
-            label: 'Actions',
-            render: (row: Product) => (
-                <>
-                    <Button onClick={() => handleEdit(row)}>Edit</Button>
-                    <Button onClick={() => { setProductToDelete(row); setIsDeleteModalOpen(true); }} disabled={loading}>
-                        {loading ? 'Deleting...' : 'Delete'}
-                    </Button>
-                </>
-            )
-        }
     ];
 
     return (
         <div className="p-6">
-            <div className='flex justify-between items-center'>
-                <h1 className="text-3xl font-bold mb-6">Manage Products</h1>
-                <div className='mb-5' >
+            <div className='flex justify-between items-center mb-6 mt-4'>
+                <h1 className="text-3xl font-bold">Manage Products</h1>
+
+                <div className='flex space-x-4'>
                     <Button onClick={() => setIsModalOpen(true)}>Add New Product</Button>
                 </div>
             </div>
-
-
             {notification && (
                 <NotificationPopup
                     title={notification.title}
@@ -134,17 +145,17 @@ const ProductManagement: React.FC<ProductManagementProps> = ({ theme }) => {
                 />
             )}
 
-
-
             <ReusableTable
                 columns={columns}
                 data={products}
-                onRowSelect={() => { }}
+                onRowSelect={(selectedIds) => setSelectedRow(selectedIds[0] || null)} // Handle single row selection
                 theme={theme}
                 itemsPerPage={10}
                 visibleColumns={columns}
                 onColumnVisibilityChange={() => { }}
                 rowKey="id"
+                selectionMode="single" // Enable single selection mode
+                actions={actions} // Pass the actions to the ReusableTable
             />
 
             {isModalOpen && (
@@ -164,10 +175,12 @@ const ProductManagement: React.FC<ProductManagementProps> = ({ theme }) => {
                     <div>
                         <h2>Confirm Deletion</h2>
                         <p>Are you sure you want to delete this product?</p>
+                        <div className="flex justify-end gap-2 mt-4">
                         <Button onClick={handleDelete} disabled={loading}>
                             {loading ? 'Deleting...' : 'Confirm'}
                         </Button>
                         <Button onClick={() => setIsDeleteModalOpen(false)}>Cancel</Button>
+                        </div>
                     </div>
                 </Modal>
             )}

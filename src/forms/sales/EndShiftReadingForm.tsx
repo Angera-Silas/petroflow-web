@@ -1,49 +1,45 @@
 import React, { useState, useEffect } from 'react';
-import { getRequest, putRequest } from '../../utils/api';
+import { putRequest } from '../../utils/api';
 import NotificationPopup from '../../components/popups/NotificationPopup';
 import Button from '../../components/buttons/Button';
 import TextInputField from '../../components/inputs/TextInputField';
 
 interface EndShiftReadingFormProps {
     theme: string;
-    organizationId: number;
-    facilityId: number;
-    sellPointId: number;
-    shiftId: number;
+    selectedReading: {
+        id: number;
+        readingDate: string;
+        shiftType: string;
+        sellPointName: string;
+        startReading: string;
+        endReading: string;
+        totalVolume: string;
+        status: string;
+        sellPointId: number;
+        shiftId: number;
+        createdBy: string;
+        updatedBy: string;
+        createdAt: string;
+    };
     userName: string; // Name of the person sending the request
 }
 
-const EndShiftReadingForm: React.FC<EndShiftReadingFormProps> = ({ theme, organizationId, facilityId, sellPointId, shiftId, userName }) => {
+const formatDate = (date: Date): string => {
+    const pad = (num: number) => num.toString().padStart(2, '0');
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+};
+
+const EndShiftReadingForm: React.FC<EndShiftReadingFormProps> = ({ theme, selectedReading, userName }) => {
     const [formData, setFormData] = useState({
-        organizationId: organizationId,
-        facilityId: facilityId,
-        sellPointId: sellPointId,
-        shiftId: shiftId,
-        startReading: '',
-        endReading: '',
-        readingDate: '',
-        createdBy: '',
+        ...selectedReading,
         updatedBy: userName,
+        updatedAt: formatDate(new Date()).toString(),
+        
         status: 'CLOSED',
-        totalVolume: ''
     });
 
     const [notification, setNotification] = useState<{ title: string; message: string; type: 'success' | 'error' | 'info' | 'warning' } | null>(null);
     const [loading, setLoading] = useState(false);
-
-    useEffect(() => {
-        // Fetch the start reading data
-        const fetchStartReading = async () => {
-            try {
-                const response = await getRequest(`/pump-meter-readings/get/${organizationId}/${facilityId}/${sellPointId}/${shiftId}`);
-                setFormData((prev) => ({ ...prev, ...response }));
-            } catch (error) {
-                console.error('Error fetching start reading:', error);
-            }
-        };
-
-        fetchStartReading();
-    }, [organizationId, facilityId, sellPointId, shiftId]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
@@ -57,11 +53,17 @@ const EndShiftReadingForm: React.FC<EndShiftReadingFormProps> = ({ theme, organi
 
         try {
             // Calculate total volume
-            const totalVolume = (parseFloat(formData.endReading) - parseFloat(formData.startReading)).toString();
-            const updatedFormData = { ...formData, totalVolume };
+            const updatedFormData = {
+                "id": formData.id,
+                "endReading":formData.endReading,
+                "startReading": formData.startReading,
+                "updatedBy": formData.updatedBy,
+                "updatedAt": formData.updatedAt,
+                "status": formData.status,
+            }
 
-            // Handle form submission logic here
-            await putRequest(`/pump-meter-readings/update/${updatedFormData.shiftId}`, updatedFormData);
+            
+            await putRequest(`/pump-meter-readings/record/endreading/${updatedFormData.id}`, updatedFormData);
 
             setNotification({
                 title: 'Success',
@@ -96,6 +98,27 @@ const EndShiftReadingForm: React.FC<EndShiftReadingFormProps> = ({ theme, organi
 
             <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
+
+                <TextInputField
+                        label="Shift Type"
+                        name="shiftType"
+                        value={formData.shiftType}
+                        onChange={handleChange}
+                        type="text"
+                        placeholder="Enter Shift Type"
+                        theme={theme}
+                        readonly={true}
+                    />
+                    <TextInputField
+                        label="Sell Point Name"
+                        name="sellPointName"
+                        value={formData.sellPointName}
+                        onChange={handleChange}
+                        type="text"
+                        placeholder="Enter Sell Point Name"
+                        theme={theme}
+                        readonly={true}
+                    />
                     <TextInputField
                         label="Start Reading"
                         name="startReading"
@@ -106,6 +129,8 @@ const EndShiftReadingForm: React.FC<EndShiftReadingFormProps> = ({ theme, organi
                         theme={theme}
                         readonly={true}
                     />
+                    
+
                     <TextInputField
                         label="End Reading"
                         name="endReading"
@@ -115,58 +140,15 @@ const EndShiftReadingForm: React.FC<EndShiftReadingFormProps> = ({ theme, organi
                         placeholder="Enter End Reading"
                         theme={theme}
                     />
-                    <TextInputField
-                        label="Reading Date"
-                        name="readingDate"
-                        value={formData.readingDate}
-                        onChange={handleChange}
-                        type="datetime-local"
-                        theme={theme}
-                        readonly={true}
-                    />
-                    <TextInputField
-                        label="Created By"
-                        name="createdBy"
-                        value={formData.createdBy}
-                        onChange={handleChange}
-                        type="text"
-                        placeholder="Enter Created By"
-                        theme={theme}
-                        readonly={true}
-                    />
-                    <TextInputField
-                        label="Updated By"
-                        name="updatedBy"
-                        value={userName}
-                        onChange={handleChange}
-                        type="text"
-                        placeholder="Enter Updated By"
-                        theme={theme}
-                        readonly={true}
-                    />
-                    <TextInputField
-                        label="Status"
-                        name="status"
-                        value={formData.status}
-                        onChange={handleChange}
-                        type="text"
-                        placeholder="Enter Status"
-                        theme={theme}
-                    />
-                    <TextInputField
-                        label="Total Volume"
-                        name="totalVolume"
-                        value={formData.totalVolume}
-                        onChange={handleChange}
-                        type="number"
-                        placeholder="Enter Total Volume"
-                        theme={theme}
-                        readonly={true}
-                    />
+
+
+                    
                 </div>
+                <div className="flex justify-end">
                 <Button type="submit" disabled={loading}>
                     {loading ? 'Submitting...' : 'Record End Reading'}
                 </Button>
+                </div>
             </form>
         </div>
     );

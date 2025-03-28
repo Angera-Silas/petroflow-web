@@ -4,7 +4,7 @@ import NotificationPopup from '../components/popups/NotificationPopup';
 import Button from '../components/buttons/Button';
 import CreateSellPointForm from '../forms/sales/CreateSellPoint';
 import ReusableTable from '../components/tables/ReusableTable';
-import Modal from '../components/modals/Modal'; // Assuming you have a Modal component
+import Modal from '../components/modals/Modal';
 import { useSelector } from 'react-redux';
 import { RootState } from '../store';
 
@@ -27,7 +27,6 @@ const SellPoints: React.FC<SellPointProps> = ({ theme }) => {
     const [loading, setLoading] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-    const [sellPointToDelete, setSellPointToDelete] = useState<SellPoint | null>(null);
 
     const user = useSelector((state: RootState) => state.user);
     const facilityId = user.facilityId ? Number(user.facilityId) : 0;
@@ -48,13 +47,13 @@ const SellPoints: React.FC<SellPointProps> = ({ theme }) => {
     }, [facilityId]);
 
     const handleDelete = async () => {
-        if (!sellPointToDelete) return;
+        if (!selectedSellPoint) return;
         setLoading(true);
         setNotification(null);
 
         try {
-            await deleteRequest(`/sellpoints/delete/${sellPointToDelete.id}`);
-            setSellPoints(sellPoints.filter(sellPoint => sellPoint.id !== sellPointToDelete.id));
+            await deleteRequest(`/sellpoints/delete/${selectedSellPoint.id}`);
+            setSellPoints(sellPoints.filter(sellPoint => sellPoint.id !== selectedSellPoint.id));
             setNotification({
                 title: 'Success',
                 message: 'Sell point deleted successfully!',
@@ -94,35 +93,32 @@ const SellPoints: React.FC<SellPointProps> = ({ theme }) => {
         }
     };
 
+    const actions = [
+        {
+            label: 'Edit',
+            onClick: (row: SellPoint) => handleEdit(row),
+        },
+        {
+            label: 'Delete',
+            onClick: (row: SellPoint) => {
+                setSelectedSellPoint(row);
+                setIsDeleteModalOpen(true);
+            },
+        },
+    ];
+
     const columns = [
         { key: 'name', label: 'Name' },
         { key: 'description', label: 'Description' },
         { key: 'type', label: 'Type' },
-        {
-            key: 'actions',
-            label: 'Actions',
-            render: (row: SellPoint) => (
-                <>
-                    <Button onClick={() => handleEdit(row)}>Edit</Button>
-                    <Button onClick={() => { setSellPointToDelete(row); setIsDeleteModalOpen(true); }} disabled={loading}>
-                        {loading ? 'Deleting...' : 'Delete'}
-                    </Button>
-                </>
-            )
-        }
     ];
 
     return (
         <div className="p-6">
-            <div className='flex justify-between items-center mb-6'>
-            <h1 className="text-3xl font-bold mb-6">Manage Sell Points</h1>
-
-                <div className='mb-5'>
+            <div className="flex justify-between items-center mb-6">
+                <h1 className="text-3xl font-bold mb-6">Manage Sell Points</h1>
                 <Button onClick={() => setIsModalOpen(true)}>Add New Sell Point</Button>
-                </div>
             </div>
-            
-
 
             {notification && (
                 <NotificationPopup
@@ -133,16 +129,21 @@ const SellPoints: React.FC<SellPointProps> = ({ theme }) => {
                 />
             )}
 
-
             <ReusableTable
                 columns={columns}
                 data={sellPoints}
-                onRowSelect={() => {}}
+                onRowSelect={(selectedIds) => {
+                    const selectedId = selectedIds[0];
+                    const selected = sellPoints.find((sp) => sp.id === Number(selectedId)) || null;
+                    setSelectedSellPoint(selected);
+                }}
                 theme={theme}
                 itemsPerPage={10}
                 visibleColumns={columns}
-                onColumnVisibilityChange={() => {}}
+                onColumnVisibilityChange={() => { }}
                 rowKey="id"
+                selectionMode="single" // Enable single selection mode
+                actions={actions} // Pass actions to the table
             />
 
             {isModalOpen && (
@@ -161,10 +162,12 @@ const SellPoints: React.FC<SellPointProps> = ({ theme }) => {
                     <div>
                         <h2>Confirm Deletion</h2>
                         <p>Are you sure you want to delete this sell point?</p>
-                        <Button onClick={handleDelete} disabled={loading}>
-                            {loading ? 'Deleting...' : 'Confirm'}
-                        </Button>
-                        <Button onClick={() => setIsDeleteModalOpen(false)}>Cancel</Button>
+                        <div className="flex justify-end gap-2 mt-4">
+                            <Button onClick={() => setIsDeleteModalOpen(false)}>Cancel</Button>
+                            <Button onClick={handleDelete} disabled={loading}>
+                                {loading ? 'Deleting...' : 'Delete Sell Point'}
+                            </Button>
+                        </div>
                     </div>
                 </Modal>
             )}

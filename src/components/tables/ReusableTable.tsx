@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect } from "react";
-import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { FaChevronLeft, FaChevronRight, FaCog, FaChevronDown } from "react-icons/fa";
 import './ReusableTable.css'; // Import the external CSS file
 
 interface Column {
@@ -10,24 +10,30 @@ interface Column {
   render?: (row: any) => React.ReactNode;
 }
 
-
 interface RowData {
   [key: string]: any;
 }
 
-interface ReusableTableProps {
+interface Action<T> {
+  label: string;
+  onClick: (row: T) => void;
+}
+
+interface ReusableTableProps<T> {
   columns: Column[];
-  data: RowData[];
+  data: T[];
   onRowSelect: (selectedIds: string[]) => void;
   theme: string;
   itemsPerPage: number;
   visibleColumns: Column[];
   onColumnVisibilityChange: (col: Column) => void;
   enableColumnResizing?: boolean;
-  rowKey: string; // New prop for row key
+  rowKey: string;
+  selectionMode?: "single" | "multiple";
+  actions?: Action<T>[]; // Generic actions
 }
 
-const ReusableTable: React.FC<ReusableTableProps> = ({
+const ReusableTable = <T extends RowData>({
   columns,
   data,
   onRowSelect,
@@ -36,27 +42,41 @@ const ReusableTable: React.FC<ReusableTableProps> = ({
   visibleColumns,
   onColumnVisibilityChange,
   enableColumnResizing = true,
-  rowKey, // Destructure the new prop
-}) => {
+  rowKey,
+  selectionMode = "multiple",
+  actions, // Destructure the generic actions
+}: ReusableTableProps<T>) => {
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
   const [searchKeyword, setSearchKeyword] = useState<string>("");
   const [sortConfig, setSortConfig] = useState<{ key: string | null; direction: "asc" | "desc" }>({ key: null, direction: "asc" });
   const [currentPage, setCurrentPage] = useState<number>(1);
+  const [actionDropdown, setActionDropdown] = useState<{ [key: string]: boolean }>({}); // Track dropdown visibility
 
   useEffect(() => {
     onRowSelect(selectedRows);
   }, [selectedRows, onRowSelect]);
 
   const handleRowSelect = (id: string) => {
-    setSelectedRows((prev) =>
-      prev.includes(id) ? prev.filter((row) => row !== id) : [...prev, id]
-    );
+    if (selectionMode === "single") {
+      setSelectedRows((prev) => (prev.includes(id) ? [] : [id]));
+    } else {
+      setSelectedRows((prev) =>
+        prev.includes(id) ? prev.filter((row) => row !== id) : [...prev, id]
+      );
+    }
   };
 
   const handleSort = (key: string) => {
     setSortConfig((prev) => ({
       key,
       direction: prev.key === key && prev.direction === "asc" ? "desc" : "asc",
+    }));
+  };
+
+  const toggleDropdown = (rowId: string) => {
+    setActionDropdown((prev) => ({
+      ...prev,
+      [rowId]: !prev[rowId],
     }));
   };
 
@@ -82,33 +102,8 @@ const ReusableTable: React.FC<ReusableTableProps> = ({
   const handleNextPage = () => setCurrentPage((prev) => Math.min(prev + 1, totalPages));
 
   const themeClasses = theme === "dark" ? "bg-dark-background text-dark-text" : "bg-light-background text-light-text";
+  const dropdownTheme = theme === "dark" ? "bg-gray-600 text-dark-text" : "bg-white text-light-text";
   const borderColor = theme === "dark" ? "border-gray-700" : "border-gray-300";
-
-  const startResizing = (e: React.MouseEvent, colIndex: number) => {
-    const startX = e.clientX;
-    const startWidth = e.currentTarget.parentElement?.offsetWidth || 0;
-    const nextCol = document.querySelectorAll('th')[colIndex + 1];
-    const nextColStartWidth = nextCol?.offsetWidth || 0;
-
-    const handleMouseMove = (e: MouseEvent) => {
-      const newWidth = startWidth + (e.clientX - startX);
-      const th = document.querySelectorAll('th')[colIndex];
-      if (th) {
-        th.style.width = `${newWidth}px`;
-      }
-      if (nextCol) {
-        nextCol.style.width = `${nextColStartWidth - (e.clientX - startX)}px`;
-      }
-    };
-
-    const handleMouseUp = () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
-    };
-
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
-  };
 
   return (
     <div className={`p-4 border ${borderColor} rounded-md ${themeClasses}`}>
@@ -144,14 +139,9 @@ const ReusableTable: React.FC<ReusableTableProps> = ({
                   onClick={() => handleSort(col.key)}
                 >
                   {col.label} {sortConfig.key === col.key ? (sortConfig.direction === "asc" ? "↑" : "↓") : ""}
-                  {enableColumnResizing && (
-                    <div
-                      className="resize-handle"
-                      onMouseDown={(e) => startResizing(e, index)}
-                    />
-                  )}
                 </th>
               ))}
+              {actions && <th className={`border p-2 ${borderColor}`}>Actions</th>}
             </tr>
           </thead>
           <tbody>
@@ -169,6 +159,35 @@ const ReusableTable: React.FC<ReusableTableProps> = ({
                     {row[col.key]}
                   </td>
                 ))}
+                {actions && (
+                  <td className={`p-2 flex justify-center items-center ${borderColor}`}>
+                    <div className="relative flex justify-center items-center">
+                      <button
+                        className="flex items-center justify-center space-x-1"
+                        onClick={() => toggleDropdown(row[rowKey])}
+                      >
+                        <FaCog />
+                      </button>
+                      {actionDropdown[row[rowKey]] && (
+                        <div className={`absolute border rounded shadow-md mt-2 z-50 ${dropdownTheme}`}>
+                          {actions.map((action) => (
+                            <button
+                              key={action.label}
+                              className={`block px-1 py-2 text-left w-full ${theme === 'dark' ? 'hover:bg-gray-900' : 'hover:bg-gray-100'} ${dropdownTheme}`}
+                              onClick={() => {
+                                console.log('Action clicked:', action.label, 'Row:', row);
+                                action.onClick(row);
+                                toggleDropdown(row[rowKey]);
+                              }}
+                            >
+                              {action.label}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>

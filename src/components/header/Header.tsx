@@ -148,7 +148,7 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar, theme, toggleTheme }) =>
               initial={{ x: 300 }}
               animate={{ x: 0 }}
               exit={{ x: 300 }}
-              className={`fixed top-18 right-0 w-80 h-full shadow-lg p-4 overflow-y-auto z-50 ${theme === "dark" ? "bg-gray-900 text-white" : "bg-white text-black"
+              className={`fixed top-18 right-0 w-80 h-full shadow-lg p-4 overflow-hidden overflow-y-auto z-50 ${theme === "dark" ? "bg-gray-900 text-white" : "bg-white text-black"
                 }`}
             >
               <div className="flex justify-between items-center">
@@ -159,7 +159,7 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar, theme, toggleTheme }) =>
               </div>
 
               {/* Profile Section */}
-              <div className="mt-4 p-4 rounded border">
+              <div className="mt-4 p-4 rounded border ">
                 {userProfile?.profile_photo ? (
                   <img src={userProfile.profile_photo} alt="Profile" className="w-25 h-25 rounded-full mx-auto" />
                 ) : (
@@ -172,13 +172,14 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar, theme, toggleTheme }) =>
                 <p className="text-center text-sm">{user.role || "Unknown Role"}</p>
 
                 {/* Info Cards */}
-                <div className="mt-4 space-y-5">
+                <div className="mt-4 space-y-5 ">
                   {[
-                    { icon: <FiMail />, label: "Email", value: userProfile?.email },
-                    { icon: <FiPhone />, label: "Phone", value: userProfile?.phone },
+                    
                     { icon: <FiBriefcase />, label: "Organization", value: userProfile?.organization },
                     { icon: <FiMapPin />, label: "Facility", value: userProfile?.facility },
-                    { icon: <FiMapPin />, label: "Address", value: userProfile?.address },
+                    // { icon: <FiMail />, label: "Email", value: userProfile?.email },
+                  
+                    { icon: <FiPhone />, label: "Phone", value: userProfile?.phone },
 
                   ].map((item, index) => (
                     <div
